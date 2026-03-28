@@ -1,0 +1,138 @@
+﻿/* General Layout */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #4c1d95, #1e3a8a, #000);
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+/* Top Bar */
+.top-bar {
+  background: rgba(0,0,0,0.7);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Number Buttons */
+.number-btn {
+  width: 48px;
+  height: 48px;
+  margin: 2px;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+.available {
+  background-color: #4f46e5;
+  color: white;
+}
+.available:hover {
+  background-color: #6366f1;
+  transform: scale(1.1);
+}
+.selected {
+  background-color: #facc15;
+  color: black;
+}
+.taken {
+  background-color: grey;
+  color: white;
+  cursor: not-allowed;
+}
+
+/* Cards */
+.card {
+  background: #1f2937;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+
+/* Spinner Animation */
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #facc15;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Winner Highlight Animation */
+.winner-highlight {
+  animation: pulse 1.5s infinite;
+  font-weight: bold;
+}
+@keyframes pulse {
+  0% { transform: scale(1); color: #facc15; }
+  50% { transform: scale(1.1); color: #22c55e; }
+  100% { transform: scale(1); color: #facc15; }
+}
+
+/* Winner Card Pop Effect */
+.winner-card {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  animation: pop 0.6s ease;
+}
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Slide Animations */
+.slide-left { animation: slideLeft 1s ease; }
+.slide-right { animation: slideRight 1s ease; }
+.fade-in { animation: fadeIn 1s ease; }
+
+@keyframes slideLeft {
+  from { transform: translateX(-100%); opacity:0; }
+  to { transform: translateX(0); opacity:1; }
+}
+@keyframes slideRight {
+  from { transform: translateX(100%); opacity:0; }
+  to { transform: translateX(0); opacity:1; }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+
+/* Confetti Pieces */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  top: -10px;
+  animation: fall 3s linear forwards;
+  opacity: 0.8;
+}
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
