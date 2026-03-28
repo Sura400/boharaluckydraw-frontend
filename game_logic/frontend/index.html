@@ -1,78 +1,114 @@
-﻿<script src="app.js"></script>
-<script>
-  const totalNumbers = 150;
-  let selectedNumbers = [];
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bohara Lucky Draw</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #222; color: #fff; text-align: center; }
+    .number-btn { width: 40px; height: 40px; margin: 2px; }
+    .taken { background: red; color: white; }
+    .available { background: green; color: white; }
+    .selected { background: yellow; color: black; }
+    #numbersGrid { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+    #winnersList { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Bohara Lucky Draw</h1>
 
-  // Render number grid
-  function renderNumbers(requests) {
-    const grid = document.getElementById("numbersGrid");
-    grid.innerHTML = "";
-    for (let i = 1; i <= totalNumbers; i++) {
-      const btn = document.createElement("button");
-      btn.classList.add("number-btn");
-      btn.innerText = i;
+  <div>
+    <input id="name" type="text" placeholder="Your Name">
+    <input id="phone" type="text" placeholder="Your Phone">
+    <button id="submitBtn">Register</button>
+  </div>
 
-      if (requests.find(r => r.number === i)) {
-        btn.classList.add("taken");
-        btn.disabled = true;
-      } else {
-        btn.classList.add("available");
-        btn.onclick = () => {
-          if (btn.classList.contains("selected")) {
-            btn.classList.remove("selected");
-            selectedNumbers = selectedNumbers.filter(n => n !== i);
-          } else {
-            btn.classList.add("selected");
-            selectedNumbers.push(i);
-          }
-          document.getElementById("myChoices").innerText = selectedNumbers.length > 0 
-            ? `You selected: ${selectedNumbers.join(", ")}` 
-            : "No numbers selected yet.";
-        };
+  <p id="myChoices">No numbers selected yet.</p>
+  <p id="result"></p>
+
+  <div id="numbersGrid"></div>
+
+  <h2>Winners</h2>
+  <div id="winnersList"></div>
+
+  <!-- Load app.js first -->
+  <script src="app.js"></script>
+
+  <!-- Your inline script -->
+  <script>
+    const totalNumbers = 150;
+    let selectedNumbers = [];
+
+    // Render number grid
+    function renderNumbers(requests) {
+      const grid = document.getElementById("numbersGrid");
+      grid.innerHTML = "";
+      for (let i = 1; i <= totalNumbers; i++) {
+        const btn = document.createElement("button");
+        btn.classList.add("number-btn");
+        btn.innerText = i;
+
+        if (requests.find(r => r.number === i)) {
+          btn.classList.add("taken");
+          btn.disabled = true;
+        } else {
+          btn.classList.add("available");
+          btn.onclick = () => {
+            if (btn.classList.contains("selected")) {
+              btn.classList.remove("selected");
+              selectedNumbers = selectedNumbers.filter(n => n !== i);
+            } else {
+              btn.classList.add("selected");
+              selectedNumbers.push(i);
+            }
+            document.getElementById("myChoices").innerText = selectedNumbers.length > 0 
+              ? `You selected: ${selectedNumbers.join(", ")}` 
+              : "No numbers selected yet.";
+          };
+        }
+        grid.appendChild(btn);
       }
-      grid.appendChild(btn);
     }
-  }
 
-  // Load participants
-  async function loadParticipantsUI() {
-    const requests = await loadParticipants();
-    renderNumbers(requests);
-  }
-
-  // Submit registration
-  document.getElementById("submitBtn").onclick = async () => {
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    if (!name || !phone || selectedNumbers.length === 0) {
-      document.getElementById("result").innerText = "Please enter name, phone, and select numbers.";
-      return;
+    // Load participants
+    async function loadParticipantsUI() {
+      const requests = await loadParticipants();
+      renderNumbers(requests);
     }
-    const data = await registerParticipant(name, phone, selectedNumbers);
-    document.getElementById("result").innerText = data.message || data.error;
 
-    // Show choices after registration
-    document.getElementById("myChoices").innerText = `You registered with numbers: ${selectedNumbers.join(", ")}`;
+    // Submit registration
+    document.getElementById("submitBtn").onclick = async () => {
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+      if (!name || !phone || selectedNumbers.length === 0) {
+        document.getElementById("result").innerText = "Please enter name, phone, and select numbers.";
+        return;
+      }
+      const data = await registerParticipant(name, phone, selectedNumbers);
+      document.getElementById("result").innerText = data.message || data.error;
 
-    selectedNumbers = [];
+      document.getElementById("myChoices").innerText = `You registered with numbers: ${selectedNumbers.join(", ")}`;
+
+      selectedNumbers = [];
+      loadParticipantsUI();
+    };
+
+    // Load winners
+    async function loadWinnersUI() {
+      const data = await loadWinners();
+      const list = document.getElementById("winnersList");
+      list.innerHTML = "";
+      data.rounds.forEach(round => {
+        const roundDiv = document.createElement("div");
+        roundDiv.classList.add("p-2","bg-gray-700","rounded");
+        roundDiv.innerHTML = `<strong>Round ${round.round}:</strong><br>${round.messages.join("<br>")}`;
+        list.appendChild(roundDiv);
+      });
+    }
+
+    // Initial load
     loadParticipantsUI();
-  };
-
-  // Load winners
-  async function loadWinnersUI() {
-    const data = await loadWinners();
-    const list = document.getElementById("winnersList");
-    list.innerHTML = "";
-    data.rounds.forEach(round => {
-      const roundDiv = document.createElement("div");
-      roundDiv.classList.add("p-2","bg-gray-700","rounded");
-      roundDiv.innerHTML = `<strong>Round ${round.round}:</strong><br>${round.messages.join("<br>")}`;
-      list.appendChild(roundDiv);
-    });
-  }
-
-  // Initial load
-  loadParticipantsUI();
-  loadWinnersUI();
-  setInterval(loadWinnersUI, 5000);
-</script>
+    loadWinnersUI();
+    setInterval(loadWinnersUI, 5000);
+  </script>
+</body>
+</html>

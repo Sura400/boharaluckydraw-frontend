@@ -1,170 +1,53 @@
-﻿<script>
-  let drawStep = 0;
-  const canvas = document.getElementById("wheelCanvas");
-  const ctx = canvas.getContext("2d");
-  const totalNumbers = 150;
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lucky Draw Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
+    canvas { border: 2px solid #444; margin: 20px auto; display: block; }
+    .winner-card { background: #22c55e; color: #fff; padding: 10px; margin: 10px; border-radius: 5px; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #22c55e; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: auto; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .confetti { position: fixed; width: 10px; height: 10px; top: 0; animation: fall linear forwards; }
+    @keyframes fall { to { transform: translateY(100vh); opacity: 0; } }
+    table { margin: 20px auto; border-collapse: collapse; width: 80%; }
+    td { border: 1px solid #444; padding: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Lucky Draw Admin Panel</h1>
 
-  function drawWheel() {
-    const radius = canvas.width / 2;
-    for (let i = 0; i < totalNumbers; i++) {
-      const angle = (i / totalNumbers) * 2 * Math.PI;
-      ctx.beginPath();
-      ctx.moveTo(radius, radius);
-      ctx.arc(radius, radius, radius, angle, angle + (2 * Math.PI / totalNumbers));
-      ctx.fillStyle = i % 2 === 0 ? "#4f46e5" : "#22c55e";
-      ctx.fill();
-      ctx.save();
-      ctx.translate(radius, radius);
-      ctx.rotate(angle + (Math.PI / totalNumbers));
-      ctx.fillStyle = "white";
-      ctx.font = "10px Arial";
-      ctx.fillText(i+1, radius - 30, 0);
-      ctx.restore();
-    }
-  }
-  drawWheel();
+  <!-- Wheel -->
+  <canvas id="wheelCanvas" width="400" height="400"></canvas>
 
-  function spinWheel(winningNumber, targetId, message) {
-    let angle = 0;
-    const spinDuration = 10000;
-    const start = Date.now();
-    const targetAngle = (winningNumber / totalNumbers) * 2 * Math.PI;
+  <!-- Draw & Reset -->
+  <button id="drawBtn">🎲 Draw First Winner</button>
+  <button id="resetBtn">🔄 Reset Game</button>
 
-    function animate() {
-      const elapsed = Date.now() - start;
-      if (elapsed < spinDuration) {
-        angle += 0.3;
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.save();
-        ctx.translate(canvas.width/2, canvas.height/2);
-        ctx.rotate(angle);
-        ctx.translate(-canvas.width/2, -canvas.height/2);
-        drawWheel();
-        ctx.restore();
-        requestAnimationFrame(animate);
-      } else {
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.save();
-        ctx.translate(canvas.width/2, canvas.height/2);
-        ctx.rotate(targetAngle);
-        ctx.translate(-canvas.width/2, -canvas.height/2);
-        drawWheel();
-        ctx.restore();
-        document.getElementById(targetId).innerHTML = `<div class="winner-card">${message}</div>`;
-        playDing();
-        if (drawStep === 3) launchConfetti();
-      }
-    }
-    animate();
-  }
+  <!-- Results -->
+  <div id="firstResult"></div>
+  <div id="secondResult"></div>
+  <div id="thirdResult"></div>
+  <p id="result"></p>
 
-  function launchConfetti() {
-    for (let i = 0; i < 100; i++) {
-      const confetti = document.createElement("div");
-      confetti.className = "confetti";
-      confetti.style.left = Math.random() * window.innerWidth + "px";
-      confetti.style.backgroundColor = ["#facc15", "#22c55e", "#3b82f6", "#ef4444", "#ec4899"][Math.floor(Math.random()*5)];
-      confetti.style.animationDuration = (2 + Math.random() * 3) + "s";
-      document.body.appendChild(confetti);
-      setTimeout(() => confetti.remove(), 5000);
-    }
-  }
+  <!-- Admin Actions -->
+  <h2>Admin Controls</h2>
+  <input id="newAdminPass" type="password" placeholder="New Admin Password">
+  <button id="changePassBtn">Change Password</button>
+  <br><br>
+  <input id="removeNumber" type="number" placeholder="Number to remove">
+  <input id="removeReason" type="text" placeholder="Reason">
+  <button id="removeBtn">Remove Number</button>
 
-  function playDing() {
-    const sound = document.getElementById("dingSound");
-    sound.currentTime = 0;
-    sound.play();
-  }
+  <!-- Participants -->
+  <h2>Participants</h2>
+  <table id="participantsTable"></table>
 
-  // ✅ DRAW HANDLER
-  document.getElementById("drawBtn").onclick = async () => {
-    drawStep++;
-    if (drawStep > 3) {
-      alert("All three winners have already been drawn!");
-      return;
-    }
+  <!-- Sound -->
+  <audio id="dingSound" src="ding.mp3"></audio>
 
-    const targetId = drawStep === 1 ? "firstResult" : drawStep === 2 ? "secondResult" : "thirdResult";
-    document.getElementById(targetId).innerHTML = '<div class="spinner"></div>';
-
-    const response = await fetch("https://boharaluckydraw-backend.onrender.com/draw", { method: "POST" });
-    const data = await response.json();
-
-    if (data.message) {
-      const match = data.message.match(/number (\d+)/i);
-      if (match) {
-        const winningNumber = parseInt(match[1]);
-        spinWheel(winningNumber, targetId, data.message);
-      } else {
-        document.getElementById(targetId).innerText = data.message;
-      }
-    } else {
-      document.getElementById("result").innerText = data.error || "Error during draw";
-    }
-
-    // Update button label dynamically
-    if (drawStep < 3) {
-      const labels = ["First Winner", "Second Winner", "Third Winner"];
-      document.getElementById("drawBtn").innerText = `🎲 Draw ${labels[drawStep]}`;
-    } else {
-      document.getElementById("drawBtn").innerText = "✅ All Winners Drawn";
-    }
-  };
-
-  // ✅ RESET HANDLER
-  document.getElementById("resetBtn").onclick = async () => {
-    const response = await fetch("https://boharaluckydraw-backend.onrender.com/reset", { method: "POST" });
-    const data = await response.json();
-    document.getElementById("firstResult").innerText = "";
-    document.getElementById("secondResult").innerText = "";
-    document.getElementById("thirdResult").innerText = "";
-    drawStep = 0;
-    document.getElementById("result").innerText = data.message || data.error;
-    document.getElementById("drawBtn").innerText = "🎲 Draw First Winner";
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    drawWheel();
-  };
-
-  // ✅ PASSWORD CHANGE
-  document.getElementById("changePassBtn").onclick = async () => {
-    const newPass = document.getElementById("newAdminPass").value;
-    const response = await fetch("https://boharaluckydraw-backend.onrender.com/admin/change_password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: newPass })
-    });
-    const data = await response.json();
-    document.getElementById("result").innerText = data.message || data.error;
-  };
-
-  // ✅ REMOVE NUMBER
-  document.getElementById("removeBtn").onclick = async () => {
-    const num = parseInt(document.getElementById("removeNumber").value);
-    const reason = document.getElementById("removeReason").value;
-    const response = await fetch("https://boharaluckydraw-backend.onrender.com/admin/remove_number", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ number: num, reason })
-    });
-    const data = await response.json();
-    document.getElementById("result").innerText = data.message || data.error;
-    loadParticipants();
-  };
-
-  // ✅ PARTICIPANTS LIST
-  async function loadParticipants() {
-    const response = await fetch("https://boharaluckydraw-backend.onrender.com/participants");
-    const data = await response.json();
-    const table = document.getElementById("participantsTable");
-    table.innerHTML = "";
-    data.requests.forEach(r => {
-      const row = `<tr>
-        <td class="border border-gray-700 px-4 py-2">${r.name}</td>
-        <td class="border border-gray-700 px-4 py-2">${r.phone}</td>
-        <td class="border border-gray-700 px-4 py-2">${r.number}</td>
-      </tr>`;
-      table.innerHTML += row;
-    });
-  }
-  loadParticipants();
-</script>
+  <!-- Script -->
+  <script src="admin.js"></script>
+</body>
+</html>
