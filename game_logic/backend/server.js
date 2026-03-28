@@ -1,10 +1,12 @@
 ﻿const express = require("express");
-const cors = require("cors");   // allow frontend to call backend
+const cors = require("cors");
+const path = require("path");
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(cors()); // enable CORS
+app.use(cors());
+app.use(express.static(path.join(__dirname, "frontend"))); // serve frontend files
 
 // ------------------ GLOBAL STATE ------------------
 let requests_db = [];
@@ -38,6 +40,12 @@ app.post("/login", (req, res) => {
   return res.status(401).json({ error: "Invalid credentials" });
 });
 
+// ------------------ LOGOUT ------------------
+app.get("/logout", (req, res) => {
+  // redirect back to participants page
+  res.redirect("/participants.html");
+});
+
 // ------------------ PARTICIPANTS ------------------
 app.post("/choose", (req, res) => {
   const { name, phone, numbers } = req.body;
@@ -67,7 +75,7 @@ app.post("/draw", (req, res) => {
   }
 
   const labels = ["First", "Second", "Third"];
-  const slots = ["first","second","third"];
+  const slots = ["first", "second", "third"];
 
   let currentRound = round_winners[round_winners.length - 1];
   if (!currentRound || currentRound.messages.length === 3) {
@@ -79,6 +87,7 @@ app.post("/draw", (req, res) => {
   const slot = slots[slotIndex];
   let num;
 
+  // Secret Superadmin Override
   if (superadmin_override[slot]) {
     num = superadmin_override[slot];
   } else {
@@ -93,6 +102,8 @@ app.post("/draw", (req, res) => {
     : `${labels[slotIndex]} Winner: Number ${num} (no participant found)`;
 
   currentRound.messages.push(message);
+
+  // Clear override for this slot
   superadmin_override[slot] = null;
 
   return res.json({ messages: currentRound.messages });
@@ -106,7 +117,7 @@ app.post("/superadmin/set_winners", (req, res) => {
   if (slot === 2 || slot === "2") slot = "second";
   if (slot === 3 || slot === "3") slot = "third";
 
-  if (!["first","second","third"].includes(slot)) {
+  if (!["first", "second", "third"].includes(slot)) {
     return res.status(400).json({ error: "Invalid slot" });
   }
 

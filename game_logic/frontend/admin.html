@@ -36,6 +36,7 @@
     <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400">🎉 Bohara Lucky Draw Admin</h1>
     <nav class="space-x-4">
       <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
+      <!-- ✅ Logout now redirects to participants.html -->
       <a href="/logout" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</a>
     </nav>
   </div>
@@ -138,15 +139,14 @@
       const targetId = drawStep === 1 ? "firstResult" : drawStep === 2 ? "secondResult" : "thirdResult";
       document.getElementById(targetId).innerHTML = '<div class="spinner"></div>';
 
-      const response = await fetch(`${BACKEND_URL}/draw`, { method: "POST" });
+      const response = await fetch("/draw", { method: "POST" });
       const data = await response.json();
 
-      if (data.message || data.messages) {
+      if (data.messages) {
         setTimeout(() => {
-          const msg = data.message || data.messages[drawStep-1];
           let icon = drawStep === 1 ? "🚗" : drawStep === 2 ? "💵" : "🎰";
           document.getElementById(targetId).innerHTML = `
-            <div class="winner-card">${icon} ${msg}</div>`;
+            <div class="winner-card">${icon} ${data.messages[drawStep-1]}</div>`;
           playDing();
           if (drawStep === 3) launchConfetti();
         }, 2000);
@@ -156,7 +156,7 @@
     };
 
     document.getElementById("resetBtn").onclick = async () => {
-      const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST" });
+      const response = await fetch("/reset", { method: "POST" });
       const data = await response.json();
       document.getElementById("firstResult").innerText = "";
       document.getElementById("secondResult").innerText = "";
@@ -167,7 +167,7 @@
 
     document.getElementById("changePassBtn").onclick = async () => {
       const newPass = document.getElementById("newAdminPass").value;
-      const response = await fetch(`${BACKEND_URL}/admin/change_password`, {
+      const response = await fetch("/admin/change_password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: newPass })
@@ -179,18 +179,18 @@
     document.getElementById("removeBtn").onclick = async () => {
       const num = parseInt(document.getElementById("removeNumber").value);
       const reason = document.getElementById("removeReason").value;
-      const response = await fetch(`${BACKEND_URL}/admin/remove_number`, {
+      const response = await fetch("/admin/remove_number", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ number: num, reason })
       });
-            const data = await response.json();
+      const data = await response.json();
       document.getElementById("result").innerText = data.message || data.error;
       loadParticipants();
     };
 
-    async function loadParticipants() {
-      const response = await fetch(`${BACKEND_URL}/participants`);
+        async function loadParticipants() {
+      const response = await fetch("/participants");
       const data = await response.json();
       const table = document.getElementById("participantsTable");
       table.innerHTML = "";
@@ -209,4 +209,3 @@
   </script>
 </body>
 </html>
-
