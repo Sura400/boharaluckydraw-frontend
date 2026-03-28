@@ -2,52 +2,211 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Lucky Draw Admin</title>
+  <title>Admin Dashboard - Bohara Lucky Draw</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="static/style.css">
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
-    canvas { border: 2px solid #444; margin: 20px auto; display: block; }
-    .winner-card { background: #22c55e; color: #fff; padding: 10px; margin: 10px; border-radius: 5px; }
-    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #22c55e; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: auto; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    .confetti { position: fixed; width: 10px; height: 10px; top: 0; animation: fall linear forwards; }
-    @keyframes fall { to { transform: translateY(100vh); opacity: 0; } }
-    table { margin: 20px auto; border-collapse: collapse; width: 80%; }
-    td { border: 1px solid #444; padding: 5px; }
+    /* Spinner */
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #4f46e5;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -10px;
+      animation: fall 3s linear forwards;
+      opacity: 0.8;
+    }
+    @keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
   </style>
 </head>
-<body>
-  <h1>Lucky Draw Admin Panel</h1>
+<body class="bg-gray-900 text-white min-h-screen">
+  <!-- Top Bar -->
+  <div class="flex justify-between items-center bg-indigo-700 p-4">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400">🎉 Bohara Lucky Draw Admin</h1>
+    <nav class="space-x-4">
+      <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
+      <a href="/logout" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</a>
+    </nav>
+  </div>
 
-  <!-- Wheel -->
-  <canvas id="wheelCanvas" width="400" height="400"></canvas>
+  <!-- Main Content -->
+  <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+    <!-- Left: Actions & Results -->
+    <div class="space-y-6">
+      <!-- Actions -->
+      <div class="space-y-4">
+        <button id="drawBtn" class="w-full px-4 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold text-lg">
+          🎲 Draw Winner
+        </button>
+        <button id="resetBtn" class="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold text-lg">
+          🔄 Reset Game
+        </button>
+      </div>
 
-  <!-- Draw & Reset -->
-  <button id="drawBtn">🎲 Draw First Winner</button>
-  <button id="resetBtn">🔄 Reset Game</button>
+      <!-- Results -->
+      <div id="drawArea" class="mt-6 space-y-4">
+        <div id="firstResult" class="text-xl font-bold text-indigo-300"></div>
+        <div id="secondResult" class="text-xl font-bold text-indigo-300"></div>
+        <div id="thirdResult" class="text-xl font-bold text-indigo-300"></div>
+      </div>
 
-  <!-- Results -->
-  <div id="firstResult"></div>
-  <div id="secondResult"></div>
-  <div id="thirdResult"></div>
-  <p id="result"></p>
+      <!-- Change Password -->
+      <div class="mt-8">
+        <h2 class="text-xl font-bold text-indigo-300 mb-2">🔒 Change Password</h2>
+        <input type="password" id="newAdminPass" placeholder="New Password"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <button id="changePassBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">
+          Update Password
+        </button>
+      </div>
 
-  <!-- Admin Actions -->
-  <h2>Admin Controls</h2>
-  <input id="newAdminPass" type="password" placeholder="New Admin Password">
-  <button id="changePassBtn">Change Password</button>
-  <br><br>
-  <input id="removeNumber" type="number" placeholder="Number to remove">
-  <input id="removeReason" type="text" placeholder="Reason">
-  <button id="removeBtn">Remove Number</button>
+      <!-- Remove Number -->
+      <div class="mt-8">
+        <h2 class="text-xl font-bold text-indigo-300 mb-2">❌ Remove Participant Number</h2>
+        <input type="number" id="removeNumber" placeholder="Number to Remove"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <input type="text" id="removeReason" placeholder="Reason (e.g. no payment)"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <button id="removeBtn" class="w-full px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">
+          Remove Number
+        </button>
+      </div>
 
-  <!-- Participants -->
-  <h2>Participants</h2>
-  <table id="participantsTable"></table>
+      <!-- Status -->
+      <div id="result" class="mt-6 text-lg text-green-400 whitespace-pre-line"></div>
+    </div>
+
+    <!-- Right: Participants -->
+    <div>
+      <h2 class="text-2xl font-bold text-indigo-300 mb-4">👥 Participants</h2>
+      <table class="w-full border-collapse border border-gray-700">
+        <thead>
+          <tr class="bg-gray-800">
+            <th class="border border-gray-700 px-4 py-2">Name</th>
+            <th class="border border-gray-700 px-4 py-2">Phone</th>
+            <th class="border border-gray-700 px-4 py-2">Number</th>
+          </tr>
+        </thead>
+        <tbody id="participantsTable"></tbody>
+      </table>
+    </div>
+  </div>
 
   <!-- Sound -->
-  <audio id="dingSound" src="ding.mp3"></audio>
+  <audio id="dingSound" src="/static/ding.mp3" preload="auto"></audio>
 
   <!-- Script -->
-  <script src="admin.js"></script>
+  <script>
+    let drawStep = 0;
+
+    function launchConfetti() {
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement("div");
+        confetti.className = "confetti";
+        confetti.style.left = Math.random() * window.innerWidth + "px";
+        confetti.style.backgroundColor = ["#facc15", "#22c55e", "#3b82f6", "#ef4444", "#ec4899"][Math.floor(Math.random()*5)];
+        confetti.style.animationDuration = (2 + Math.random() * 3) + "s";
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+    function playDing() {
+      const sound = document.getElementById("dingSound");
+      sound.currentTime = 0;
+      sound.play();
+    }
+
+    document.getElementById("drawBtn").onclick = async () => {
+      drawStep++;
+      if (drawStep > 3) {
+        alert("All three winners have already been drawn!");
+        return;
+      }
+
+      const targetId = drawStep === 1 ? "firstResult" : drawStep === 2 ? "secondResult" : "thirdResult";
+      document.getElementById(targetId).innerHTML = '<div class="spinner"></div>';
+
+      const response = await fetch(`${BACKEND_URL}/draw`, { method: "POST" });
+      const data = await response.json();
+
+      if (data.message || data.messages) {
+        setTimeout(() => {
+          const msg = data.message || data.messages[drawStep-1];
+          let icon = drawStep === 1 ? "🚗" : drawStep === 2 ? "💵" : "🎰";
+          document.getElementById(targetId).innerHTML = `
+            <div class="winner-card">${icon} ${msg}</div>`;
+          playDing();
+          if (drawStep === 3) launchConfetti();
+        }, 2000);
+      } else {
+        document.getElementById("result").innerText = data.error || "Error during draw";
+      }
+    };
+
+    document.getElementById("resetBtn").onclick = async () => {
+      const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST" });
+      const data = await response.json();
+      document.getElementById("firstResult").innerText = "";
+      document.getElementById("secondResult").innerText = "";
+      document.getElementById("thirdResult").innerText = "";
+      drawStep = 0;
+      document.getElementById("result").innerText = data.message || data.error;
+    };
+
+    document.getElementById("changePassBtn").onclick = async () => {
+      const newPass = document.getElementById("newAdminPass").value;
+      const response = await fetch(`${BACKEND_URL}/admin/change_password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: newPass })
+      });
+      const data = await response.json();
+      document.getElementById("result").innerText = data.message || data.error;
+    };
+
+    document.getElementById("removeBtn").onclick = async () => {
+      const num = parseInt(document.getElementById("removeNumber").value);
+      const reason = document.getElementById("removeReason").value;
+      const response = await fetch(`${BACKEND_URL}/admin/remove_number`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ number: num, reason })
+      });
+            const data = await response.json();
+      document.getElementById("result").innerText = data.message || data.error;
+      loadParticipants();
+    };
+
+    async function loadParticipants() {
+      const response = await fetch(`${BACKEND_URL}/participants`);
+      const data = await response.json();
+      const table = document.getElementById("participantsTable");
+      table.innerHTML = "";
+      data.requests.forEach(r => {
+        const row = `<tr>
+          <td class="border border-gray-700 px-4 py-2">${r.name}</td>
+          <td class="border border-gray-700 px-4 py-2">${r.phone}</td>
+          <td class="border border-gray-700 px-4 py-2">${r.number}</td>
+        </tr>`;
+        table.innerHTML += row;
+      });
+    }
+
+    // Initial load
+    loadParticipants();
+  </script>
 </body>
 </html>
+
