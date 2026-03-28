@@ -1,7 +1,7 @@
 // Global frontend JS for Lucky Draw
 // All fetch calls point to Render backend
 
-// Replace with your actual backend Render URL
+// ✅ Backend service URL on Render
 const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
 
 // ------------------ PARTICIPANTS ------------------
