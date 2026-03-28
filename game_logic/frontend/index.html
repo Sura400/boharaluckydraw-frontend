@@ -2,113 +2,186 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bohara Lucky Draw</title>
+  <title>User Portal - Bohara Lucky Draw</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/style.css">
   <style>
-    body { font-family: Arial, sans-serif; background: #222; color: #fff; text-align: center; }
-    .number-btn { width: 40px; height: 40px; margin: 2px; }
-    .taken { background: red; color: white; }
-    .available { background: green; color: white; }
-    .selected { background: yellow; color: black; }
-    #numbersGrid { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
-    #winnersList { margin-top: 20px; }
+    body { font-family: Arial, sans-serif; background:#111; color:#fff; margin:0; }
+    .top-bar { display:flex; justify-content:space-between; align-items:center; background:#4f46e5; padding:10px; }
+    .top-bar h1 { margin:0; font-size:1.5rem; color:#facc15; }
+    .card { background:#222; padding:15px; border-radius:8px; }
+    .number-btn { width:50px; height:50px; border-radius:8px; font-weight:bold; font-size:16px; transition:transform 0.2s; }
+    .number-btn.available { background:#22c55e; color:white; }
+    .number-btn.taken { background:#ef4444; color:white; }
+    .number-btn.selected { background:#facc15; color:black; transform:scale(1.1); }
+    .winner-card { background:#333; padding:10px; border-radius:6px; }
+    .footer { text-align:center; padding:10px; background:#4f46e5; color:white; margin-top:20px; }
+    .confetti { position:fixed; width:10px; height:10px; top:0; animation:fall linear forwards; }
+    @keyframes fall { to { transform:translateY(100vh); opacity:0; } }
   </style>
 </head>
 <body>
-  <h1>Bohara Lucky Draw</h1>
 
-  <div>
-    <input id="name" type="text" placeholder="Your Name">
-    <input id="phone" type="text" placeholder="Your Phone">
-    <button id="submitBtn">Register</button>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <a href="/logout" class="px-4 py-2 bg-red-600 rounded-lg text-white font-bold">🚪 Logout</a>
+    <h1>🎉 Bohara Lucky Draw</h1>
+    <a href="admin.html" class="px-4 py-2 bg-pink-600 rounded-lg text-white font-bold">🔑 Admin Login</a>
   </div>
 
-  <p id="myChoices">No numbers selected yet.</p>
-  <p id="result"></p>
+  <!-- Main Layout -->
+  <div class="mt-10 w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+    
+    <!-- Participants Left -->
+    <div class="card overflow-y-auto max-h-[600px]">
+      <h2 class="text-2xl font-bold text-indigo-300 mb-4">👥 Participants</h2>
+      <ul id="participantsList" class="text-gray-200 space-y-2"></ul>
+    </div>
 
-  <div id="numbersGrid"></div>
+    <!-- Center: User Info + Number Grid -->
+    <div class="flex flex-col items-center">
+      <div class="card mb-6 w-full max-w-md">
+        <input type="text" id="userName" placeholder="Your Name" class="mb-4 w-full p-2 rounded bg-gray-700 text-white" required>
+        <input type="text" id="userPhone" placeholder="Your Phone Number" class="mb-4 w-full p-2 rounded bg-gray-700 text-white" required>
+        <input type="file" id="userReceipt" class="mb-4 w-full text-gray-200">
+      </div>
 
-  <h2>Winners</h2>
-  <div id="winnersList"></div>
+      <div id="number-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-3 mt-6 px-4"></div>
 
-  <!-- Load app.js first -->
+      <button id="submitBtn" class="mt-6 px-6 py-2 bg-green-600 rounded-lg text-white font-bold">
+        ✅ Submit Selection
+      </button>
+
+      <div id="result" class="mt-6 text-xl text-green-400 text-center"></div>
+    </div>
+
+    <!-- Winners Right -->
+    <div class="card overflow-y-auto max-h-[600px]">
+      <h2 class="text-2xl font-bold text-yellow-300 mb-4">🏆 Round Winners</h2>
+      <div id="winnersRounds" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">Powered by Bohara Lucky Draw • Mobile‑friendly design</div>
+
+  <!-- Sound -->
+  <audio id="dingSound" src="/static/ding.mp3" preload="auto"></audio>
+
+  <!-- Load app.js -->
   <script src="app.js"></script>
 
-  <!-- Your inline script -->
+  <!-- Inline Script -->
   <script>
-    const totalNumbers = 150;
-    let selectedNumbers = [];
+    const grid = document.getElementById("number-grid");
+    let takenNumbers = [];
 
-    // Render number grid
-    function renderNumbers(requests) {
-      const grid = document.getElementById("numbersGrid");
+    async function loadParticipantsUI() {
+      const response = await fetch(`${BACKEND_URL}/participants`);
+      const data = await response.json();
+      takenNumbers = data.requests.map(r => r.number);
+
+      const list = document.getElementById("participantsList");
+      list.innerHTML = "";
+      data.requests.forEach(r => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="font-bold text-yellow-300">${r.name}</span> 
+                        (<span class="text-indigo-300">${r.phone}</span>) 
+                        chose <span class="text-green-400">#${r.number}</span>`;
+        list.appendChild(li);
+      });
+
+      renderGrid();
+      loadWinnersUI();
+    }
+
+    function renderGrid() {
       grid.innerHTML = "";
-      for (let i = 1; i <= totalNumbers; i++) {
+      for (let i = 1; i <= 150; i++) {
         const btn = document.createElement("button");
-        btn.classList.add("number-btn");
+        btn.type = "button";
         btn.innerText = i;
-
-        if (requests.find(r => r.number === i)) {
+        btn.className = "number-btn";
+        if (takenNumbers.includes(i)) {
           btn.classList.add("taken");
           btn.disabled = true;
         } else {
           btn.classList.add("available");
-          btn.onclick = () => {
-            if (btn.classList.contains("selected")) {
-              btn.classList.remove("selected");
-              selectedNumbers = selectedNumbers.filter(n => n !== i);
-            } else {
-              btn.classList.add("selected");
-              selectedNumbers.push(i);
-            }
-            document.getElementById("myChoices").innerText = selectedNumbers.length > 0 
-              ? `You selected: ${selectedNumbers.join(", ")}` 
-              : "No numbers selected yet.";
-          };
+          btn.onclick = () => btn.classList.toggle("selected");
         }
         grid.appendChild(btn);
       }
     }
 
-    // Load participants
-    async function loadParticipantsUI() {
-      const requests = await loadParticipants();
-      renderNumbers(requests);
+    async function loadWinnersUI() {
+      const response = await fetch(`${BACKEND_URL}/winners`);
+      const data = await response.json();
+      const container = document.getElementById("winnersRounds");
+      container.innerHTML = "";
+      data.rounds.forEach(round => {
+        const div = document.createElement("div");
+        div.className = "winner-card";
+        const title = document.createElement("h3");
+        title.className = "text-lg font-bold text-yellow-400 mb-2";
+        title.innerText = `Round ${round.round}`;
+        div.appendChild(title);
+        round.messages.forEach(msg => {
+          const li = document.createElement("p");
+          li.className = "winner-highlight";
+          li.innerText = msg;
+          div.appendChild(li);
+        });
+        container.appendChild(div);
+      });
     }
 
-    // Submit registration
     document.getElementById("submitBtn").onclick = async () => {
-      const name = document.getElementById("name").value;
-      const phone = document.getElementById("phone").value;
-      if (!name || !phone || selectedNumbers.length === 0) {
-        document.getElementById("result").innerText = "Please enter name, phone, and select numbers.";
+      const name = document.getElementById("userName").value.trim();
+      const phone = document.getElementById("userPhone").value.trim();
+      const receipt = document.getElementById("userReceipt").files[0];
+      if (!name || !phone) {
+        document.getElementById("result").innerText = "⚠️ Please enter your name and phone number.";
         return;
       }
-      const data = await registerParticipant(name, phone, selectedNumbers);
+
+      const selected = Array.from(grid.querySelectorAll(".selected")).map(b => b.innerText);
+      if (selected.length === 0) {
+        document.getElementById("result").innerText = "⚠️ Please select at least one number.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("phone", phone);
+      selected.forEach(n => formData.append("numbers", n));
+      if (receipt) formData.append("receipt", receipt);
+
+      const response = await fetch(`${BACKEND_URL}/choose`, { method: "POST", body: formData });
+      const data = await response.json();
       document.getElementById("result").innerText = data.message || data.error;
-
-      document.getElementById("myChoices").innerText = `You registered with numbers: ${selectedNumbers.join(", ")}`;
-
-      selectedNumbers = [];
       loadParticipantsUI();
     };
 
-    // Load winners
-    async function loadWinnersUI() {
-      const data = await loadWinners();
-      const list = document.getElementById("winnersList");
-      list.innerHTML = "";
-      data.rounds.forEach(round => {
-        const roundDiv = document.createElement("div");
-        roundDiv.classList.add("p-2","bg-gray-700","rounded");
-        roundDiv.innerHTML = `<strong>Round ${round.round}:</strong><br>${round.messages.join("<br>")}`;
-        list.appendChild(roundDiv);
-      });
+    function launchConfetti() {
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement("div");
+        confetti.className = "confetti";
+        confetti.style.left = Math.random() * window.innerWidth + "px";
+        confetti.style.backgroundColor = ["#facc15", "#22c55e", "#3b82f6", "#ef4444", "#ec4899"][Math.floor(Math.random()*5)];
+        confetti.style.animationDuration = (2 + Math.random() * 3) + "s";
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+        function playDing() {
+      const sound = document.getElementById("dingSound");
+      sound.currentTime = 0;
+      sound.play();
     }
 
     // Initial load
     loadParticipantsUI();
-    loadWinnersUI();
-    setInterval(loadWinnersUI, 5000);
   </script>
 </body>
 </html>
