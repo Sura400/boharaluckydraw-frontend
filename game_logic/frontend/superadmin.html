@@ -2,85 +2,121 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Superadmin Dashboard - Lucky Draw</title>
+  <title>Super Admin Dashboard - Bohara Lucky Draw</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="static/style.css">
 </head>
-<body class="bg-gradient-to-r from-gray-900 via-purple-900 to-black text-white min-h-screen">
-  <div class="p-6">
-    <!-- Top Bar -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-extrabold text-purple-400">👑 Superadmin Dashboard</h1>
-      <a href="index.html" class="px-4 py-2 bg-red-600 hover:bg-red-400 rounded-lg text-white font-bold">🚪 Logout</a>
+<body class="bg-gray-900 text-white min-h-screen">
+  <!-- Top Bar -->
+  <div class="flex justify-between items-center bg-indigo-700 p-4">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400">👑 Super Admin Dashboard</h1>
+    <nav class="space-x-4">
+      <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
+      <a href="admin.html" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">🛠 Admin Panel</a>
+      <a href="/logout" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</a>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+    <!-- Left Column -->
+    <div class="space-y-8">
+      <!-- Set Winners -->
+      <div>
+        <h2 class="text-xl font-bold text-indigo-300 mb-2">🏆 Set Winners Manually</h2>
+        <input type="number" id="winner1" placeholder="First Winner Number"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <input type="number" id="winner2" placeholder="Second Winner Number"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <input type="number" id="winner3" placeholder="Third Winner Number"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <button id="setWinnersBtn" class="w-full px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">
+          ✅ Set Winners
+        </button>
+      </div>
+
+      <!-- Change Password -->
+      <div>
+        <h2 class="text-xl font-bold text-indigo-300 mb-2">🔒 Change Super Admin Password</h2>
+        <input type="password" id="newSuperPass" placeholder="New Password"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <button id="changeSuperPassBtn" class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold">
+          Update Password
+        </button>
+      </div>
     </div>
 
-    <!-- Secret Winner Override -->
-    <div class="card p-6 bg-gray-800 rounded-lg shadow-lg mb-10">
-      <h2 class="text-2xl font-bold text-purple-300 mb-4">🔒 Secretly Set Winner</h2>
-      <label class="block mb-2 text-gray-300">Select Slot</label>
-      <select id="slotSelect" class="mb-4 w-full p-2 rounded bg-gray-700 text-white">
-        <option value="first">First Winner</option>
-        <option value="second">Second Winner</option>
-        <option value="third">Third Winner</option>
-      </select>
+    <!-- Right Column -->
+    <div class="space-y-8">
+      <!-- Create Admin -->
+      <div>
+        <h2 class="text-xl font-bold text-indigo-300 mb-2">➕ Create New Admin</h2>
+        <input type="text" id="newAdminUser" placeholder="Username"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <input type="text" id="newAdminPass" placeholder="Password"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <input type="text" id="newAdminQuestion" placeholder="Secret Question"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <input type="text" id="newAdminAnswer" placeholder="Secret Answer"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <button id="createAdminBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">
+          ➕ Create Admin
+        </button>
+      </div>
 
-      <label class="block mb-2 text-gray-300">Enter Number</label>
-      <input type="number" id="winnerNumber" placeholder="Number (1-150)" 
-             class="mb-4 w-full p-2 rounded bg-gray-700 text-white">
-
-      <button id="setBtn" class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-400 rounded-lg text-white font-bold">
-        ✅ Secretly Set Winner
-      </button>
-
-      <div id="result" class="mt-4 text-lg text-green-400"></div>
-    </div>
-
-    <!-- Change Password -->
-    <div class="card p-6 bg-gray-800 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-bold text-purple-300 mb-4">🔑 Change Superadmin Password</h2>
-      <input type="password" id="newSuperPass" placeholder="New Password"
-             class="mb-4 w-full p-2 rounded bg-gray-700 text-white">
-      <button id="changePassBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-400 rounded-lg text-white font-bold">
-        Update Password
-      </button>
-      <div id="passResult" class="mt-4 text-lg text-green-400"></div>
+      <!-- Results -->
+      <div id="result" class="mt-6 text-lg text-green-400 whitespace-pre-line"></div>
     </div>
   </div>
 
+  <!-- Script -->
   <script>
-    // ✅ Secret winner override
-    document.getElementById("setBtn").onclick = async () => {
-      const slot = document.getElementById("slotSelect").value;
-      const number = parseInt(document.getElementById("winnerNumber").value);
+    // Set Winners
+    document.getElementById("setWinnersBtn").onclick = async () => {
+      const numbers = [];
+      const w1 = document.getElementById("winner1").value;
+      const w2 = document.getElementById("winner2").value;
+      const w3 = document.getElementById("winner3").value;
+      if (w1) numbers.push(parseInt(w1));
+      if (w2) numbers.push(parseInt(w2));
+      if (w3) numbers.push(parseInt(w3));
 
-      if (!number || number < 1 || number > 150) {
-        document.getElementById("result").innerText = "⚠️ Please enter a valid number between 1 and 150.";
-        return;
-      }
-
-      const response = await fetch("https://boharaluckydraw-backend.onrender.com/superadmin/set_winners", {
+      const response = await fetch(`${BACKEND_URL}/superadmin/set_winners`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slot, number })
+        body: JSON.stringify({ numbers })
       });
       const data = await response.json();
-      document.getElementById("result").innerText = data.message || data.error;
+      document.getElementById("result").innerText = data.messages ? data.messages.join("\\n") : data.error;
     };
 
-    // ✅ Change superadmin password
-    document.getElementById("changePassBtn").onclick = async () => {
+    // Change Super Admin Password
+    document.getElementById("changeSuperPassBtn").onclick = async () => {
       const newPass = document.getElementById("newSuperPass").value;
-      if (!newPass) {
-        document.getElementById("passResult").innerText = "⚠️ Please enter a new password.";
-        return;
-      }
-
-      const response = await fetch("https://boharaluckydraw-backend.onrender.com/superadmin/change_password", {
+      const response = await fetch(`${BACKEND_URL}/superadmin/change_password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: newPass })
       });
       const data = await response.json();
-      document.getElementById("passResult").innerText = data.message || data.error;
+      document.getElementById("result").innerText = data.message || data.error;
+    };
+
+    // Create Admin
+    document.getElementById("createAdminBtn").onclick = async () => {
+      const payload = {
+        username: document.getElementById("newAdminUser").value,
+        password: document.getElementById("newAdminPass").value,
+        question: document.getElementById("newAdminQuestion").value,
+        answer: document.getElementById("newAdminAnswer").value
+      };
+      const response = await fetch(`${BACKEND_URL}/superadmin/create_admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      document.getElementById("result").innerText = data.message || data.error;
     };
   </script>
 </body>
