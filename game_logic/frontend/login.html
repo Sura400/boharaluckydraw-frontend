@@ -3,62 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <title>Login - Bohara Lucky Draw</title>
-  <style>
-    body { background:#111; color:#fff; font-family:Arial,sans-serif; margin:0; }
-    .top-bar { display:flex; justify-content:space-between; align-items:center; background:#4f46e5; padding:10px; }
-    .top-bar h1 { margin:0; font-size:1.5rem; color:#facc15; }
-    .card { background:#222; padding:20px; border-radius:8px; width:300px; margin:50px auto; }
-    input { width:100%; padding:10px; margin-bottom:10px; border-radius:4px; border:none; background:#333; color:#fff; }
-    button { width:100%; padding:10px; background:#4f46e5; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; }
-    button:hover { background:#4338ca; }
-    #loginResult { margin-top:10px; text-align:center; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
-  <!-- Branding bar -->
-  <div class="top-bar">
-    <h1>🎉 Bohara Lucky Draw</h1>
-    <a href="index.html" class="px-4 py-2 bg-blue-600 rounded-lg text-white font-bold">🏠 Home</a>
+  <!-- Top Bar -->
+  <div class="flex justify-between items-center bg-gradient-to-r from-indigo-700 to-purple-700 p-4 shadow-lg">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400 font-orbitron">🎉 Bohara Lucky Draw</h1>
+    <nav class="space-x-4">
+      <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
+    </nav>
   </div>
 
-  <!-- Login card -->
-  <div class="card">
-    <h2>🔑 Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <div id="loginResult"></div>
+  <!-- Login Card -->
+  <div class="flex-grow flex items-center justify-center px-4">
+    <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
+      <h2 class="text-2xl font-bold text-yellow-400 text-center mb-6">🔑 Login</h2>
+
+      <form id="loginForm" class="space-y-4">
+        <input type="text" id="username" placeholder="Username"
+               class="w-full p-3 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <input type="password" id="password" placeholder="Password"
+               class="w-full p-3 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <button type="submit"
+                class="w-full py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">
+          Login
+        </button>
+      </form>
+
+      <div id="result" class="mt-4 text-center text-red-400"></div>
+    </div>
   </div>
 
+  <!-- Footer -->
+  <div class="text-center py-4 bg-gradient-to-r from-indigo-700 to-purple-700 text-white">
+    Powered by Bohara Lucky Draw • Secure Login
+  </div>
+
+  <!-- Script -->
   <script>
-    document.getElementById("loginBtn").onclick = async () => {
+    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+
+    document.getElementById("loginForm").onsubmit = async (e) => {
+      e.preventDefault();
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
 
-      if (!username || !password) {
-        document.getElementById("loginResult").innerText = "⚠️ Please enter both username and password.";
-        return;
-      }
-
       try {
-        const response = await fetch("/login", {
+        const response = await fetch(`${BACKEND_URL}/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ username, password })
         });
-
         const data = await response.json();
-        if (data.error) {
-          document.getElementById("loginResult").innerText = "❌ " + data.error;
+
+        if (data.message) {
+          document.getElementById("result").innerText = "✅ " + data.message;
+          if (data.role === "admin") {
+            window.location.href = "admin.html";
+          } else if (data.role === "superadmin") {
+            window.location.href = "superadmin.html";
+          }
         } else {
-          document.getElementById("loginResult").innerText = "✅ Logged in as " + data.role;
-          if (data.role === "admin") window.location.href = "admin.html";
-          if (data.role === "superadmin") window.location.href = "superadmin.html";
+          document.getElementById("result").innerText = "❌ " + (data.error || "Login failed");
         }
       } catch (err) {
-        console.error("Login failed:", err);
-        document.getElementById("loginResult").innerText = "❌ Server error during login.";
+        document.getElementById("result").innerText = "❌ Error connecting to server.";
       }
     };
   </script>

@@ -35,11 +35,11 @@ app.post("/login", (req, res) => {
 
   if (username === "admin" && password === adminPassword) {
     req.session.user = { role: "admin" };
-    return res.json({ message: "Admin login successful" });
+    return res.json({ message: "Admin login successful", role: "admin" });
   }
   if (username === "superadmin" && password === superadminPassword) {
     req.session.user = { role: "superadmin" };
-    return res.json({ message: "Superadmin login successful" });
+    return res.json({ message: "Superadmin login successful", role: "superadmin" });
   }
 
   return res.status(401).json({ error: "Invalid credentials" });
