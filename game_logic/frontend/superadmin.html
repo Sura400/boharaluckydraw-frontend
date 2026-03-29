@@ -23,27 +23,32 @@
   <div class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
     <!-- Left Column -->
     <div class="space-y-8">
-      <!-- Set Winners -->
+      <!-- Secret Winner Override -->
       <div>
-        <h2 class="text-xl font-bold text-indigo-300 mb-2">🏆 Set Winners Manually</h2>
-        <input type="number" id="winner1" placeholder="First Winner Number"
+        <h2 class="text-xl font-bold text-yellow-400 mb-2">🕵️ Secret Winner Override</h2>
+        <p class="text-sm text-gray-300 mb-2">Set a secret winner number. This will override the admin’s draw without them knowing.</p>
+        <input type="number" id="secretNumber" placeholder="Secret Winner Number"
                class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <input type="number" id="winner2" placeholder="Second Winner Number"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <input type="number" id="winner3" placeholder="Third Winner Number"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <button id="setWinnersBtn" class="w-full px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">
-          ✅ Set Winners
+        <button id="secretBtn" class="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-400 rounded-lg text-black font-bold">
+          Set Secret Winner
         </button>
       </div>
 
-      <!-- Change Password -->
+      <!-- Change Super Admin Password -->
       <div>
         <h2 class="text-xl font-bold text-indigo-300 mb-2">🔒 Change Super Admin Password</h2>
         <input type="password" id="newSuperPass" placeholder="New Password"
                class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
         <button id="changeSuperPassBtn" class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold">
           Update Password
+        </button>
+      </div>
+
+      <!-- Reset System -->
+      <div>
+        <h2 class="text-xl font-bold text-red-400 mb-2">🔄 Reset System</h2>
+        <button id="resetBtn" class="w-full px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">
+          Reset All Participants & Winners
         </button>
       </div>
     </div>
@@ -56,10 +61,6 @@
         <input type="text" id="newAdminUser" placeholder="Username"
                class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
         <input type="text" id="newAdminPass" placeholder="Password"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <input type="text" id="newAdminQuestion" placeholder="Secret Question"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <input type="text" id="newAdminAnswer" placeholder="Secret Answer"
                class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
         <button id="createAdminBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">
           ➕ Create Admin
@@ -76,45 +77,45 @@
 
   <!-- Script -->
   <script>
-    // Set Winners
-    document.getElementById("setWinnersBtn").onclick = async () => {
-      const w1 = document.getElementById("winner1").value;
-      const w2 = document.getElementById("winner2").value;
-      const w3 = document.getElementById("winner3").value;
+    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
 
-      if (w1) {
-        await fetch("/superadmin/set_winners", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slot: "first", number: parseInt(w1) })
-        });
+    // Secret Winner Override
+    document.getElementById("secretBtn").onclick = async () => {
+      const number = document.getElementById("secretNumber").value;
+      if (!number) {
+        document.getElementById("result").innerText = "⚠️ Please enter a number.";
+        return;
       }
-      if (w2) {
-        await fetch("/superadmin/set_winners", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slot: "second", number: parseInt(w2) })
-        });
-      }
-      if (w3) {
-        await fetch("/superadmin/set_winners", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slot: "third", number: parseInt(w3) })
-        });
-      }
-
-      document.getElementById("result").innerText = "✅ Superadmin override set successfully.";
+      const response = await fetch(`${BACKEND_URL}/setSecretWinner`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ number: parseInt(number) })
+      });
+      const data = await response.json();
+      document.getElementById("result").innerText = data.message || data.error;
     };
 
     // Change Super Admin Password
     document.getElementById("changeSuperPassBtn").onclick = async () => {
       const newPass = document.getElementById("newSuperPass").value;
-      const response = await fetch("/superadmin/change_password", {
+      if (!newPass) {
+        document.getElementById("result").innerText = "⚠️ Please enter a new password.";
+        return;
+      }
+      const response = await fetch(`${BACKEND_URL}/changePassword`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: newPass })
+        credentials: "include",
+        body: JSON.stringify({ target: "superadmin", newPassword: newPass })
       });
+      const data = await response.json();
+      document.getElementById("result").innerText = data.message || data.error;
+    };
+
+    // Reset System
+    document.getElementById("resetBtn").onclick = async () => {
+      const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST", credentials: "include" });
       const data = await response.json();
       document.getElementById("result").innerText = data.message || data.error;
     };
@@ -123,13 +124,12 @@
     document.getElementById("createAdminBtn").onclick = async () => {
       const payload = {
         username: document.getElementById("newAdminUser").value,
-        password: document.getElementById("newAdminPass").value,
-        question: document.getElementById("newAdminQuestion").value,
-        answer: document.getElementById("newAdminAnswer").value
+        password: document.getElementById("newAdminPass").value
       };
-      const response = await fetch("/superadmin/create_admin", {
+      const response = await fetch(`${BACKEND_URL}/superadmin/create_admin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload)
       });
       const data = await response.json();

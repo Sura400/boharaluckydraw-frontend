@@ -1,104 +1,155 @@
 ﻿const express = require("express");
-const cors = require("cors");
-const path = require("path");
 const session = require("express-session");
-const app = express();
-const port = process.env.PORT || 3000;
+const cors = require("cors");
+require("dotenv").config();
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "*", // adjust to your frontend URL if needed
+  credentials: true
+}));
 app.use(session({
-  secret: "bohara-secret-key",
+  secret: process.env.SESSION_SECRET || "supersecret",
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false }
+  cookie: { secure: false } // set secure:true if using HTTPS
 }));
 
-// Serve frontend files
-app.use(express.static(path.join(__dirname, "frontend")));
+// In-memory storage (replace with DB if needed)
+let participants = [];
+let winners = [];
+let adminPassword = process.env.ADMIN_PASS || "admin123";
+let superadminPassword = process.env.SUPERADMIN_PASS || "superadmin123";
+let secretWinner = null; // superadmin override
 
-// In-memory storage
-let requests_db = [];
-let round_winners = [];
-let superadmin_override = { first: null, second: null, third: null };
-
-const NUMBER_RANGE = Array.from({ length: 150 }, (_, i) => i + 1);
-
-// User accounts
-const users = {
-  superadmin: { password: "sura@2026", role: "superadmin" },
-  admin: { password: "Bohara2026", role: "admin" }
-};
-
-// LOGIN
+// --- AUTH ROUTES ---
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
-  console.log("Login attempt:", req.body);
-
-  const user = users[username];
-  if (user && user.password === password) {
-    req.session.user = { username, role: user.role };
-    return res.json({ role: user.role, username });
+  if (!username || !password) {
+    return res.status(400).json({ error: "Missing credentials" });
   }
+
+  if (username === "admin" && password === adminPassword) {
+    req.session.user = { role: "admin" };
+    return res.json({ message: "Admin login successful" });
+  }
+  if (username === "superadmin" && password === superadminPassword) {
+    req.session.user = { role: "superadmin" };
+    return res.json({ message: "Superadmin login successful" });
+  }
+
   return res.status(401).json({ error: "Invalid credentials" });
 });
 
-// LOGOUT
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => res.redirect("/login.html"));
+  req.session.destroy(() => {
+    res.json({ message: "Logged out successfully" });
+  });
 });
 
-// AUTH MIDDLEWARE
-function requireLogin(role) {
-  return (req, res, next) => {
-    if (!req.session.user) return res.redirect("/login.html");
-    if (role && req.session.user.role !== role) return res.status(403).send("Forbidden");
-    next();
-  };
-}
+// --- PARTICIPANTS ROUTES ---
+app.get("/participants", (req, res) => {
+  res.json({ requests: participants });
+});
 
-// PARTICIPANTS
 app.post("/choose", (req, res) => {
   const { name, phone, numbers } = req.body;
-  console.log("Received choose request:", req.body);
-
   if (!name || !phone || !numbers || numbers.length === 0) {
-    return res.status(400).json({ error: "Name, phone, and numbers required" });
+    return res.status(400).json({ error: "Missing participant info" });
   }
 
-  for (let number of numbers) {
-    if (!NUMBER_RANGE.includes(number)) {
-      return res.status(400).json({ error: `Invalid number ${number}` });
+  // Prevent duplicate number selection
+  for (let num of numbers) {
+    if (participants.find(p => p.number === num)) {
+      return res.status(400).json({ error: `Number ${num} already taken` });
     }
-    if (requests_db.find(r => r.number === number)) {
-      return res.status(400).json({ error: `Number ${number} already chosen` });
-    }
-    requests_db.push({ name, phone, number });
   }
-  return res.json({ message: `${name} (${phone}) chose numbers ${numbers}` });
+
+  numbers.forEach(num => {
+    participants.push({ name, phone, number: num });
+  });
+
+  res.json({ message: "Selection successful!" });
 });
 
-app.get("/participants", (req, res) => res.json({ requests: requests_db }));
-
-// WINNERS (example route)
+// --- WINNERS ROUTES ---
 app.get("/winners", (req, res) => {
-  res.json({ rounds: round_winners });
+  res.json({ rounds: winners });
 });
 
-// RESET (admin only)
-app.post("/reset", requireLogin("admin"), (req, res) => {
-  requests_db = [];
-  round_winners = [];
-  superadmin_override = { first: null, second: null, third: null };
-  res.json({ message: "Game reset complete" });
+// Admin draw route
+app.post("/drawWinner", (req, res) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+
+  let chosenNumber;
+  if (secretWinner) {
+    // Superadmin override
+    chosenNumber = secretWinner;
+    secretWinner = null; // clear after use
+  } else {
+    // Normal random draw
+    const availableNumbers = participants.map(p => p.number);
+    if (availableNumbers.length === 0) {
+      return res.status(400).json({ error: "No participants to draw from" });
+    }
+    chosenNumber = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
+  }
+
+  const winner = participants.find(p => p.number === chosenNumber);
+  const round = winners.length + 1;
+  const message = winner ? `${winner.name} (${winner.phone}) won with #${winner.number}` : `No winner found`;
+
+  winners.push({ round, messages: [message] });
+  res.json({ message: "Winner drawn", result: message });
 });
 
-// SUPERADMIN override winners
-app.post("/override", requireLogin("superadmin"), (req, res) => {
-  const { first, second, third } = req.body;
-  superadmin_override = { first, second, third };
-  res.json({ message: "Winners overridden", override: superadmin_override });
+// Superadmin can secretly set the winner
+app.post("/setSecretWinner", (req, res) => {
+  if (!req.session.user || req.session.user.role !== "superadmin") {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  const { number } = req.body;
+  if (!number) {
+    return res.status(400).json({ error: "Missing number" });
+  }
+  secretWinner = number;
+  res.json({ message: `Secret winner #${number} set successfully` });
 });
 
-// Start server
-app.listen(port, () => console.log(`Server running on port ${port}`));
+// --- ADMIN / SUPERADMIN ROUTES ---
+app.post("/reset", (req, res) => {
+  if (!req.session.user || req.session.user.role !== "superadmin") {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  participants = [];
+  winners = [];
+  secretWinner = null;
+  res.json({ message: "System reset successful" });
+});
+
+app.post("/changePassword", (req, res) => {
+  if (!req.session.user || req.session.user.role !== "superadmin") {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  const { target, newPassword } = req.body;
+  if (target === "admin") {
+    adminPassword = newPassword;
+    return res.json({ message: "Admin password updated" });
+  }
+  if (target === "superadmin") {
+    superadminPassword = newPassword;
+    return res.json({ message: "Superadmin password updated" });
+  }
+  res.status(400).json({ error: "Invalid target" });
+});
+
+// --- SERVER START ---
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
