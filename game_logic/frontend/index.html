@@ -37,35 +37,41 @@
       border-radius: 12px;
       padding: 20px;
     }
+    /* Keno-style grid */
     #number-grid {
-      display:flex;
-      flex-wrap:nowrap;
-      overflow-x:auto;
-      gap:10px;
-      padding:10px;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr); /* 10 numbers per row */
+      gap: 12px;
+      padding: 20px;
+      justify-items: center;
     }
     .number-btn {
-      width:70px; height:70px; border-radius:50%; font-weight:bold; font-size:18px;
-      display:flex; align-items:center; justify-content:center;
-      transition:transform 0.2s, background 0.3s, box-shadow 0.3s;
-      flex:0 0 auto;
-      cursor:pointer;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.3s, box-shadow 0.3s;
+      cursor: pointer;
     }
     .number-btn.available {
-      background: linear-gradient(145deg, #22c55e, #16a34a);
-      color:white;
-      box-shadow: 0 0 15px #22c55e;
+      background: radial-gradient(circle at 30% 30%, #22c55e, #16a34a);
+      color: white;
+      box-shadow: 0 0 12px #22c55e;
     }
     .number-btn.taken {
-      background: linear-gradient(145deg, #ef4444, #b91c1c);
-      color:white;
-      box-shadow: 0 0 15px #ef4444;
+      background: radial-gradient(circle at 30% 30%, #ef4444, #b91c1c);
+      color: white;
+      box-shadow: 0 0 12px #ef4444;
     }
     .number-btn.selected {
-      background: linear-gradient(145deg, #facc15, #eab308);
-      color:black;
+      background: radial-gradient(circle at 30% 30%, #facc15, #eab308);
+      color: black;
       transform: scale(1.2);
-      box-shadow: 0 0 25px #facc15;
+      box-shadow: 0 0 20px #facc15;
       animation: pulse 0.5s ease;
     }
     @keyframes pulse {
@@ -164,7 +170,6 @@
     }
 
     function renderGrid() {
-      console.log("Rendering grid...");
       grid.innerHTML = "";
       for (let i = 1; i <= 150; i++) {
         const btn = document.createElement("button");
