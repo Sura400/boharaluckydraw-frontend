@@ -1,12 +1,23 @@
 ﻿const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const session = require("express-session"); // ✅ add session
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, "frontend"))); // serve frontend files
+
+// ✅ configure session
+app.use(session({
+  secret: "bohara-secret-key", // change to a strong secret in production
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false } // set secure:true if using HTTPS
+}));
+
+// ✅ serve frontend files
+app.use(express.static(path.join(__dirname, "frontend")));
 
 // ------------------ GLOBAL STATE ------------------
 let requests_db = [];
@@ -35,6 +46,8 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
   const user = users[username];
   if (user && user.password === password) {
+    // ✅ store session
+    req.session.user = { username, role: user.role };
     return res.json({ role: user.role, username });
   }
   return res.status(401).json({ error: "Invalid credentials" });
@@ -42,8 +55,33 @@ app.post("/login", (req, res) => {
 
 // ------------------ LOGOUT ------------------
 app.get("/logout", (req, res) => {
-  // redirect back to participants page
-  res.redirect("/participants.html");
+  req.session.destroy(() => {
+    res.redirect("/index.html"); // ✅ redirect to index after logout
+  });
+});
+
+// ------------------ AUTH MIDDLEWARE ------------------
+function requireLogin(role) {
+  return (req, res, next) => {
+    if (!req.session.user) {
+      return res.redirect("/login.html"); // not logged in
+    }
+    if (role && req.session.user.role !== role) {
+      return res.status(403).send("Forbidden");
+    }
+    next();
+  };
+}
+
+// ------------------ PROTECTED ROUTES ------------------
+// Protect admin.html
+app.get("/admin.html", requireLogin("admin"), (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "admin.html"));
+});
+
+// Protect superadmin.html
+app.get("/superadmin.html", requireLogin("superadmin"), (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "superadmin.html"));
 });
 
 // ------------------ PARTICIPANTS ------------------
@@ -69,7 +107,7 @@ app.get("/participants", (req, res) => {
 });
 
 // ------------------ DRAW WINNERS ------------------
-app.post("/draw", (req, res) => {
+app.post("/draw", requireLogin("admin"), (req, res) => {
   if (requests_db.length === 0) {
     return res.status(400).json({ error: "No requests yet" });
   }
@@ -87,7 +125,6 @@ app.post("/draw", (req, res) => {
   const slot = slots[slotIndex];
   let num;
 
-  // Secret Superadmin Override
   if (superadmin_override[slot]) {
     num = superadmin_override[slot];
   } else {
@@ -102,17 +139,14 @@ app.post("/draw", (req, res) => {
     : `${labels[slotIndex]} Winner: Number ${num} (no participant found)`;
 
   currentRound.messages.push(message);
-
-  // Clear override for this slot
   superadmin_override[slot] = null;
 
   return res.json({ messages: currentRound.messages });
 });
 
 // ------------------ SUPERADMIN SET WINNERS ------------------
-app.post("/superadmin/set_winners", (req, res) => {
+app.post("/superadmin/set_winners", requireLogin("superadmin"), (req, res) => {
   let { slot, number } = req.body;
-
   if (slot === 1 || slot === "1") slot = "first";
   if (slot === 2 || slot === "2") slot = "second";
   if (slot === 3 || slot === "3") slot = "third";
@@ -131,7 +165,7 @@ app.get("/winners", (req, res) => {
 });
 
 // ------------------ RESET ------------------
-app.post("/reset", (req, res) => {
+app.post("/reset", requireLogin("admin"), (req, res) => {
   requests_db = [];
   round_winners = [];
   superadmin_override = { first: null, second: null, third: null };
@@ -139,7 +173,7 @@ app.post("/reset", (req, res) => {
 });
 
 // ------------------ ADMIN CHANGE PASSWORD ------------------
-app.post("/admin/change_password", (req, res) => {
+app.post("/admin/change_password", requireLogin("admin"), (req, res) => {
   const { password } = req.body;
   if (!password) {
     return res.status(400).json({ error: "New password required" });
@@ -149,7 +183,7 @@ app.post("/admin/change_password", (req, res) => {
 });
 
 // ------------------ SUPERADMIN CHANGE PASSWORD ------------------
-app.post("/superadmin/change_password", (req, res) => {
+app.post("/superadmin/change_password", requireLogin("superadmin"), (req, res) => {
   const { password } = req.body;
   if (!password) {
     return res.status(400).json({ error: "New password required" });
@@ -159,7 +193,7 @@ app.post("/superadmin/change_password", (req, res) => {
 });
 
 // ------------------ ADMIN REMOVE NUMBER ------------------
-app.post("/admin/remove_number", (req, res) => {
+app.post("/admin/remove_number", requireLogin("admin"), (req, res) => {
   const { number, reason } = req.body;
   const idx = requests_db.findIndex(r => r.number === number);
   if (idx !== -1) {
@@ -170,7 +204,7 @@ app.post("/admin/remove_number", (req, res) => {
 });
 
 // ------------------ SUPERADMIN CREATE ADMIN ------------------
-app.post("/superadmin/create_admin", (req, res) => {
+app.post("/superadmin/create_admin", requireLogin("superadmin"), (req, res) => {
   const { username, password, question, answer } = req.body;
   if (!username || !password || !question || !answer) {
     return res.status(400).json({ error: "Username, password, question, and answer required" });

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard - Bohara Lucky Draw</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="static/style.css">
   <style>
@@ -30,19 +31,19 @@
     @keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
   </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
   <!-- Top Bar -->
   <div class="flex justify-between items-center bg-indigo-700 p-4">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400">🎉 Bohara Lucky Draw Admin</h1>
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400">🛠 Admin Dashboard</h1>
     <nav class="space-x-4">
       <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
-      <!-- ✅ Logout now redirects to participants.html -->
       <a href="/logout" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</a>
     </nav>
   </div>
 
   <!-- Main Content -->
-  <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+  <div class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
     <!-- Left: Actions & Results -->
     <div class="space-y-6">
       <!-- Actions -->
@@ -103,6 +104,9 @@
       </table>
     </div>
   </div>
+
+  <!-- Footer -->
+  <div class="footer text-center py-4 bg-indigo-700 text-white">Powered by Bohara Lucky Draw • Admin Control Panel</div>
 
   <!-- Sound -->
   <audio id="dingSound" src="/static/ding.mp3" preload="auto"></audio>
@@ -178,6 +182,8 @@
 
     document.getElementById("removeBtn").onclick = async () => {
       const num = parseInt(document.getElementById("removeNumber").value);
+      const reason =     document.getElementById("removeBtn").onclick = async () => {
+      const num = parseInt(document.getElementById("removeNumber").value);
       const reason = document.getElementById("removeReason").value;
       const response = await fetch("/admin/remove_number", {
         method: "POST",
@@ -189,7 +195,7 @@
       loadParticipants();
     };
 
-        async function loadParticipants() {
+    async function loadParticipants() {
       const response = await fetch("/participants");
       const data = await response.json();
       const table = document.getElementById("participantsTable");

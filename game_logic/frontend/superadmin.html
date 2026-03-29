@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Super Admin Dashboard - Bohara Lucky Draw</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="static/style.css">
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
   <!-- Top Bar -->
   <div class="flex justify-between items-center bg-indigo-700 p-4">
     <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400">👑 Super Admin Dashboard</h1>
     <nav class="space-x-4">
       <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
       <a href="admin.html" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">🛠 Admin Panel</a>
-      <!-- ✅ Logout now redirects to index.html (participants page) -->
       <a href="/logout" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</a>
     </nav>
   </div>
 
   <!-- Main Content -->
-  <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+  <div class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
     <!-- Left Column -->
     <div class="space-y-8">
       <!-- Set Winners -->
@@ -70,42 +71,40 @@
     </div>
   </div>
 
+  <!-- Footer -->
+  <div class="footer text-center py-4 bg-indigo-700 text-white">Powered by Bohara Lucky Draw • Super Admin Control</div>
+
   <!-- Script -->
   <script>
     // Set Winners
     document.getElementById("setWinnersBtn").onclick = async () => {
-      const numbers = [];
       const w1 = document.getElementById("winner1").value;
       const w2 = document.getElementById("winner2").value;
       const w3 = document.getElementById("winner3").value;
-      if (w1) numbers.push(parseInt(w1));
-      if (w2) numbers.push(parseInt(w2));
-      if (w3) numbers.push(parseInt(w3));
 
-      // Send each slot separately if provided
-      if (numbers[0]) {
+      if (w1) {
         await fetch("/superadmin/set_winners", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slot: "first", number: numbers[0] })
+          body: JSON.stringify({ slot: "first", number: parseInt(w1) })
         });
       }
-      if (numbers[1]) {
+      if (w2) {
         await fetch("/superadmin/set_winners", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slot: "second", number: numbers[1] })
+          body: JSON.stringify({ slot: "second", number: parseInt(w2) })
         });
       }
-      if (numbers[2]) {
+      if (w3) {
         await fetch("/superadmin/set_winners", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slot: "third", number: numbers[2] })
+          body: JSON.stringify({ slot: "third", number: parseInt(w3) })
         });
       }
 
-      document.getElementById("result").innerText = "Superadmin override set successfully.";
+      document.getElementById("result").innerText = "✅ Superadmin override set successfully.";
     };
 
     // Change Super Admin Password

@@ -26,7 +26,8 @@
   <div class="top-bar">
     <a href="/logout" class="px-4 py-2 bg-red-600 rounded-lg text-white font-bold">🚪 Logout</a>
     <h1>🎉 Bohara Lucky Draw</h1>
-    <a href="admin.html" class="px-4 py-2 bg-pink-600 rounded-lg text-white font-bold">🔑 Admin Login</a>
+    <!-- ✅ Changed: link now points to login.html instead of admin.html -->
+    <a href="login.html" class="px-4 py-2 bg-blue-600 rounded-lg text-white font-bold">🔑 Login</a>
   </div>
 
   <!-- Main Layout -->
@@ -174,7 +175,7 @@
       }
     }
 
-        function playDing() {
+    function playDing() {
       const sound = document.getElementById("dingSound");
       sound.currentTime = 0;
       sound.play();
