@@ -3,72 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <title>Login - Bohara Lucky Draw</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/static/style.css">
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: Arial, sans-serif; background:#111; color:#fff; margin:0; }
-    .top-bar { display:flex; justify-content:space-between; align-items:center; background:#4f46e5; padding:10px; }
-    .top-bar h1 { margin:0; font-size:1.5rem; color:#facc15; }
-    .card { background:#222; padding:20px; border-radius:8px; }
+    body { background:#111; color:#fff; font-family:Arial,sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; }
+    .card { background:#222; padding:20px; border-radius:8px; width:300px; }
+    input { width:100%; padding:10px; margin-bottom:10px; border-radius:4px; border:none; }
+    button { width:100%; padding:10px; background:#4f46e5; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; }
+    button:hover { background:#4338ca; }
+    #loginResult { margin-top:10px; text-align:center; }
   </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
-
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <a href="index.html" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-bold">🏠 Home</a>
-    <h1>🎉 Bohara Lucky Draw</h1>
-    <a href="/logout" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</a>
+<body>
+  <div class="card">
+    <h2>🔑 Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+    <div id="loginResult"></div>
   </div>
-
-  <!-- Login Form -->
-  <div class="flex-grow flex items-center justify-center">
-    <div class="card w-full max-w-md shadow-lg">
-      <h2 class="text-3xl font-extrabold text-yellow-400 mb-6 text-center">🔑 Login</h2>
-      
-      <form id="loginForm" class="space-y-4">
-        <input type="text" id="username" placeholder="Username" class="w-full p-3 rounded bg-gray-700 text-white" required>
-        <input type="password" id="password" placeholder="Password" class="w-full p-3 rounded bg-gray-700 text-white" required>
-        <button type="submit" class="w-full px-4 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">
-          Login
-        </button>
-      </form>
-
-      <div id="result" class="mt-4 text-red-400 text-center font-semibold"></div>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div class="footer text-center py-4 bg-indigo-700 text-white">Powered by Bohara Lucky Draw • Secure Login</div>
 
   <script>
-    document.getElementById("loginForm").onsubmit = async (e) => {
-      e.preventDefault();
+    document.getElementById("loginBtn").onclick = async () => {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
 
-      try {
-        const response = await fetch("/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
+      const payload = { username, password };
 
-        const data = await response.json();
-        if (response.ok) {
-          if (data.role === "admin") {
-            window.location.href = "admin.html";
-          } else if (data.role === "superadmin") {
-            window.location.href = "superadmin.html";
-          } else {
-            document.getElementById("result").innerText = "❌ Unknown role.";
-          }
-        } else {
-          document.getElementById("result").innerText = data.error || "❌ Invalid credentials.";
-        }
-      } catch (err) {
-        document.getElementById("result").innerText = "❌ Server error. Please try again.";
+      const response = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        document.getElementById("loginResult").innerText = "❌ " + data.error;
+      } else {
+        document.getElementById("loginResult").innerText = "✅ Logged in as " + data.role;
+        if (data.role === "admin") window.location.href = "admin.html";
+        if (data.role === "superadmin") window.location.href = "superadmin.html";
       }
     };
   </script>

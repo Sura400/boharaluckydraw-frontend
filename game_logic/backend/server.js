@@ -53,14 +53,6 @@ function requireLogin(role) {
   };
 }
 
-// PROTECTED ROUTES
-app.get("/admin.html", requireLogin("admin"), (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "admin.html"));
-});
-app.get("/superadmin.html", requireLogin("superadmin"), (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "superadmin.html"));
-});
-
 // PARTICIPANTS
 app.post("/choose", (req, res) => {
   const { name, phone, numbers } = req.body;
@@ -84,6 +76,6 @@ app.post("/choose", (req, res) => {
 
 app.get("/participants", (req, res) => res.json({ requests: requests_db }));
 
-// WINNERS, DRAW, RESET, ADMIN/SUPERADMIN routes remain same as before...
+// Winners, draw, reset, admin/superadmin routes remain same...
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
