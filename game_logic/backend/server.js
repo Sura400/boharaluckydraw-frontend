@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "*", // adjust to your frontend URL if needed
+  origin: "https://boharaluckydraw-frontend7.onrender.com", // your frontend Render URL
   credentials: true
 }));
 app.use(session({
@@ -151,5 +151,6 @@ app.post("/changePassword", (req, res) => {
 
 // --- SERVER START ---
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Bohara Lucky Draw backend running on port ${PORT}`);
+  console.log(`Frontend allowed origin: https://boharaluckydraw-frontend7.onrender.com`);
 });
