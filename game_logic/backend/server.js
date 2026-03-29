@@ -14,14 +14,17 @@ app.use(session({
   cookie: { secure: false }
 }));
 
+// Serve frontend files
 app.use(express.static(path.join(__dirname, "frontend")));
 
+// In-memory storage
 let requests_db = [];
 let round_winners = [];
 let superadmin_override = { first: null, second: null, third: null };
 
 const NUMBER_RANGE = Array.from({ length: 150 }, (_, i) => i + 1);
 
+// User accounts
 const users = {
   superadmin: { password: "sura@2026", role: "superadmin" },
   admin: { password: "Bohara2026", role: "admin" }
@@ -31,6 +34,7 @@ const users = {
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   console.log("Login attempt:", req.body);
+
   const user = users[username];
   if (user && user.password === password) {
     req.session.user = { username, role: user.role };
@@ -41,7 +45,7 @@ app.post("/login", (req, res) => {
 
 // LOGOUT
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => res.redirect("/index.html"));
+  req.session.destroy(() => res.redirect("/login.html"));
 });
 
 // AUTH MIDDLEWARE
@@ -76,6 +80,25 @@ app.post("/choose", (req, res) => {
 
 app.get("/participants", (req, res) => res.json({ requests: requests_db }));
 
-// Winners, draw, reset, admin/superadmin routes remain same...
+// WINNERS (example route)
+app.get("/winners", (req, res) => {
+  res.json({ rounds: round_winners });
+});
 
+// RESET (admin only)
+app.post("/reset", requireLogin("admin"), (req, res) => {
+  requests_db = [];
+  round_winners = [];
+  superadmin_override = { first: null, second: null, third: null };
+  res.json({ message: "Game reset complete" });
+});
+
+// SUPERADMIN override winners
+app.post("/override", requireLogin("superadmin"), (req, res) => {
+  const { first, second, third } = req.body;
+  superadmin_override = { first, second, third };
+  res.json({ message: "Winners overridden", override: superadmin_override });
+});
+
+// Start server
 app.listen(port, () => console.log(`Server running on port ${port}`));

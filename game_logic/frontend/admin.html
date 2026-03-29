@@ -5,21 +5,43 @@
   <title>Admin Dashboard - Bohara Lucky Draw</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="static/style.css">
   <style>
-    /* Spinner */
-    .spinner {
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #4f46e5;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
+    /* Lucky Draw Wheel */
+    .wheel-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
       margin: auto;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* Confetti */
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 8px solid #4f46e5;
+      background: conic-gradient(
+        #22c55e 0deg 60deg,
+        #facc15 60deg 120deg,
+        #3b82f6 120deg 180deg,
+        #ef4444 180deg 240deg,
+        #ec4899 240deg 300deg,
+        #9333ea 300deg 360deg
+      );
+      transition: transform 4s ease-out;
+    }
+    .arrow {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 30px solid #facc15;
+    }
+    .winner-card {
+      background:#222; padding:10px; border-radius:8px; margin-top:10px;
+    }
     .confetti {
       position: fixed;
       width: 10px;
@@ -44,12 +66,18 @@
 
   <!-- Main Content -->
   <div class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-    <!-- Left: Actions & Results -->
-    <div class="space-y-6">
+    <!-- Left: Wheel, Actions & Results -->
+    <div class="space-y-6 text-center">
+      <!-- Wheel -->
+      <div class="wheel-container">
+        <div class="arrow"></div>
+        <div id="wheel" class="wheel"></div>
+      </div>
+
       <!-- Actions -->
-      <div class="space-y-4">
+      <div class="space-y-4 mt-6">
         <button id="drawBtn" class="w-full px-4 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold text-lg">
-          🎲 Draw Winner
+          🎲 Spin & Draw Winner
         </button>
         <button id="resetBtn" class="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold text-lg">
           🔄 Reset Game
@@ -70,18 +98,6 @@
                class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
         <button id="changePassBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">
           Update Password
-        </button>
-      </div>
-
-      <!-- Remove Number -->
-      <div class="mt-8">
-        <h2 class="text-xl font-bold text-indigo-300 mb-2">❌ Remove Participant Number</h2>
-        <input type="number" id="removeNumber" placeholder="Number to Remove"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <input type="text" id="removeReason" placeholder="Reason (e.g. no payment)"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <button id="removeBtn" class="w-full px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">
-          Remove Number
         </button>
       </div>
 
@@ -140,20 +156,24 @@
         return;
       }
 
-      const targetId = drawStep === 1 ? "firstResult" : drawStep === 2 ? "secondResult" : "thirdResult";
-      document.getElementById(targetId).innerHTML = '<div class="spinner"></div>';
+      // Spin the wheel
+      const wheel = document.getElementById("wheel");
+      const spinDegrees = 720 + Math.floor(Math.random() * 360);
+      wheel.style.transform = `rotate(${spinDegrees}deg)`;
 
+      // Call backend draw
       const response = await fetch("/draw", { method: "POST" });
       const data = await response.json();
 
       if (data.messages) {
         setTimeout(() => {
+          const targetId = drawStep === 1 ? "firstResult" : drawStep === 2 ? "secondResult" : "thirdResult";
           let icon = drawStep === 1 ? "🚗" : drawStep === 2 ? "💵" : "🎰";
           document.getElementById(targetId).innerHTML = `
             <div class="winner-card">${icon} ${data.messages[drawStep-1]}</div>`;
           playDing();
           if (drawStep === 3) launchConfetti();
-        }, 2000);
+        }, 4000); // wait for wheel spin
       } else {
         document.getElementById("result").innerText = data.error || "Error during draw";
       }
@@ -177,22 +197,21 @@
         body: JSON.stringify({ password: newPass })
       });
       const data = await response.json();
-      document.getElementById("result").innerText = data.message || data.error;
-    };
+          document.getElementById("changePassBtn").onclick = async () => {
+      const newPass = document.getElementById("newAdminPass").value;
+      if (!newPass) {
+        document.getElementById("result").innerText = "⚠️ Please enter a new password.";
+        return;
+      }
 
-    document.getElementById("removeBtn").onclick = async () => {
-      const num = parseInt(document.getElementById("removeNumber").value);
-      const reason =     document.getElementById("removeBtn").onclick = async () => {
-      const num = parseInt(document.getElementById("removeNumber").value);
-      const reason = document.getElementById("removeReason").value;
-      const response = await fetch("/admin/remove_number", {
+      const response = await fetch("/admin/change_password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ number: num, reason })
+        body: JSON.stringify({ password: newPass })
       });
+
       const data = await response.json();
       document.getElementById("result").innerText = data.message || data.error;
-      loadParticipants();
     };
 
     async function loadParticipants() {
