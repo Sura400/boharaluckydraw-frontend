@@ -1,22 +1,22 @@
 ﻿const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const session = require("express-session"); // ✅ add session
+const session = require("express-session");
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
 
-// ✅ configure session
+// ✅ Session middleware must be before routes
 app.use(session({
-  secret: "bohara-secret-key", // change to a strong secret in production
+  secret: "bohara-secret-key", // change to strong secret in production
   resave: false,
   saveUninitialized: false,
   cookie: { secure: false } // set secure:true if using HTTPS
 }));
 
-// ✅ serve frontend files
+// ✅ Serve frontend files
 app.use(express.static(path.join(__dirname, "frontend")));
 
 // ------------------ GLOBAL STATE ------------------
@@ -27,36 +27,28 @@ let superadmin_override = { first: null, second: null, third: null };
 const NUMBER_RANGE = Array.from({ length: 150 }, (_, i) => i + 1);
 
 const users = {
-  superadmin: {
-    password: "sura@2026",
-    role: "superadmin",
-    secret_question: "What is your favorite color?",
-    secret_answer: "blue"
-  },
-  admin: {
-    password: "Bohara2026",
-    role: "admin",
-    secret_question: "What is your pet’s name?",
-    secret_answer: "lucky"
-  }
+  superadmin: { password: "sura@2026", role: "superadmin" },
+  admin: { password: "Bohara2026", role: "admin" }
 };
 
 // ------------------ LOGIN ------------------
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
+  console.log("Login attempt:", username);
   const user = users[username];
   if (user && user.password === password) {
-    // ✅ store session
     req.session.user = { username, role: user.role };
+    console.log("Login success:", req.session.user);
     return res.json({ role: user.role, username });
   }
+  console.log("Login failed");
   return res.status(401).json({ error: "Invalid credentials" });
 });
 
 // ------------------ LOGOUT ------------------
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
-    res.redirect("/index.html"); // ✅ redirect to index after logout
+    res.redirect("/index.html");
   });
 });
 
@@ -64,7 +56,7 @@ app.get("/logout", (req, res) => {
 function requireLogin(role) {
   return (req, res, next) => {
     if (!req.session.user) {
-      return res.redirect("/login.html"); // not logged in
+      return res.redirect("/login.html");
     }
     if (role && req.session.user.role !== role) {
       return res.status(403).send("Forbidden");
@@ -74,12 +66,10 @@ function requireLogin(role) {
 }
 
 // ------------------ PROTECTED ROUTES ------------------
-// Protect admin.html
 app.get("/admin.html", requireLogin("admin"), (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "admin.html"));
 });
 
-// Protect superadmin.html
 app.get("/superadmin.html", requireLogin("superadmin"), (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "superadmin.html"));
 });
