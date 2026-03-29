@@ -4,16 +4,20 @@
   <meta charset="UTF-8">
   <title>User Portal - Bohara Lucky Draw</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/static/style.css">
   <style>
     body { font-family: Arial, sans-serif; background:#111; color:#fff; margin:0; }
     .top-bar { display:flex; justify-content:space-between; align-items:center; background:#4f46e5; padding:10px; }
     .top-bar h1 { margin:0; font-size:1.5rem; color:#facc15; }
     .card { background:#222; padding:15px; border-radius:8px; }
-    .number-btn { width:50px; height:50px; border-radius:8px; font-weight:bold; font-size:16px; transition:transform 0.2s; }
+    .number-btn {
+      width:60px; height:60px; border-radius:50%; font-weight:bold; font-size:16px;
+      display:flex; align-items:center; justify-content:center;
+      transition:transform 0.2s, background 0.3s;
+      box-shadow:0 0 8px rgba(0,0,0,0.5);
+    }
     .number-btn.available { background:#22c55e; color:white; }
     .number-btn.taken { background:#ef4444; color:white; }
-    .number-btn.selected { background:#facc15; color:black; transform:scale(1.1); }
+    .number-btn.selected { background:#facc15; color:black; transform:scale(1.2); }
     .winner-card { background:#333; padding:10px; border-radius:6px; }
     .footer { text-align:center; padding:10px; background:#4f46e5; color:white; margin-top:20px; }
     .confetti { position:fixed; width:10px; height:10px; top:0; animation:fall linear forwards; }
@@ -22,29 +26,22 @@
 </head>
 <body>
 
-  <!-- Top Bar -->
   <div class="top-bar">
     <a href="/logout" class="px-4 py-2 bg-red-600 rounded-lg text-white font-bold">🚪 Logout</a>
     <h1>🎉 Bohara Lucky Draw</h1>
-    <!-- ✅ Changed: link now points to login.html instead of admin.html -->
     <a href="login.html" class="px-4 py-2 bg-blue-600 rounded-lg text-white font-bold">🔑 Login</a>
   </div>
 
-  <!-- Main Layout -->
   <div class="mt-10 w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-    
-    <!-- Participants Left -->
     <div class="card overflow-y-auto max-h-[600px]">
       <h2 class="text-2xl font-bold text-indigo-300 mb-4">👥 Participants</h2>
       <ul id="participantsList" class="text-gray-200 space-y-2"></ul>
     </div>
 
-    <!-- Center: User Info + Number Grid -->
     <div class="flex flex-col items-center">
       <div class="card mb-6 w-full max-w-md">
         <input type="text" id="userName" placeholder="Your Name" class="mb-4 w-full p-2 rounded bg-gray-700 text-white" required>
         <input type="text" id="userPhone" placeholder="Your Phone Number" class="mb-4 w-full p-2 rounded bg-gray-700 text-white" required>
-        <input type="file" id="userReceipt" class="mb-4 w-full text-gray-200">
       </div>
 
       <div id="number-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-3 mt-6 px-4"></div>
@@ -56,24 +53,18 @@
       <div id="result" class="mt-6 text-xl text-green-400 text-center"></div>
     </div>
 
-    <!-- Winners Right -->
     <div class="card overflow-y-auto max-h-[600px]">
       <h2 class="text-2xl font-bold text-yellow-300 mb-4">🏆 Round Winners</h2>
       <div id="winnersRounds" class="space-y-4"></div>
     </div>
   </div>
 
-  <!-- Footer -->
   <div class="footer">Powered by Bohara Lucky Draw • Mobile‑friendly design</div>
 
-  <!-- Sound -->
   <audio id="dingSound" src="/static/ding.mp3" preload="auto"></audio>
 
-  <!-- Load app.js -->
-  <script src="app.js"></script>
-
-  <!-- Inline Script -->
   <script>
+    const BACKEND_URL = ""; // set if backend is separate
     const grid = document.getElementById("number-grid");
     let takenNumbers = [];
 
@@ -114,7 +105,7 @@
       }
     }
 
-    async function loadWinnersUI() {
+       async function loadWinnersUI() {
       const response = await fetch(`${BACKEND_URL}/winners`);
       const data = await response.json();
       const container = document.getElementById("winnersRounds");
@@ -139,28 +130,31 @@
     document.getElementById("submitBtn").onclick = async () => {
       const name = document.getElementById("userName").value.trim();
       const phone = document.getElementById("userPhone").value.trim();
-      const receipt = document.getElementById("userReceipt").files[0];
       if (!name || !phone) {
         document.getElementById("result").innerText = "⚠️ Please enter your name and phone number.";
         return;
       }
 
-      const selected = Array.from(grid.querySelectorAll(".selected")).map(b => b.innerText);
+      const selected = Array.from(grid.querySelectorAll(".selected")).map(b => parseInt(b.innerText));
       if (selected.length === 0) {
         document.getElementById("result").innerText = "⚠️ Please select at least one number.";
         return;
       }
 
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("phone", phone);
-      selected.forEach(n => formData.append("numbers", n));
-      if (receipt) formData.append("receipt", receipt);
+      const payload = { name, phone, numbers: selected };
+      console.log("Sending payload:", payload);
 
-      const response = await fetch(`${BACKEND_URL}/choose`, { method: "POST", body: formData });
+      const response = await fetch(`${BACKEND_URL}/choose`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
       const data = await response.json();
       document.getElementById("result").innerText = data.message || data.error;
       loadParticipantsUI();
+      playDing();
+      launchConfetti();
     };
 
     function launchConfetti() {
