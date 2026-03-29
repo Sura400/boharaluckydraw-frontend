@@ -10,10 +10,10 @@ app.use(cors());
 
 // ✅ Session middleware must be before routes
 app.use(session({
-  secret: "bohara-secret-key", // change to strong secret in production
+  secret: "bohara-secret-key",
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // set secure:true if using HTTPS
+  cookie: { secure: false }
 }));
 
 // ✅ Serve frontend files
@@ -77,9 +77,12 @@ app.get("/superadmin.html", requireLogin("superadmin"), (req, res) => {
 // ------------------ PARTICIPANTS ------------------
 app.post("/choose", (req, res) => {
   const { name, phone, numbers } = req.body;
+  console.log("Received choose request:", req.body); // ✅ Debug log
+
   if (!name || !phone || !numbers || numbers.length === 0) {
     return res.status(400).json({ error: "Name, phone, and numbers required" });
   }
+
   for (let number of numbers) {
     if (!NUMBER_RANGE.includes(number)) {
       return res.status(400).json({ error: `Invalid number ${number}` });
