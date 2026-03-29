@@ -64,30 +64,38 @@
   <audio id="dingSound" src="/static/ding.mp3" preload="auto"></audio>
 
   <script>
-    const BACKEND_URL = ""; // set if backend is separate
+    // 🔑 IMPORTANT: set this to your backend Render URL
+    // Example: "https://boharaluckydraw-backend.onrender.com"
+    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+
     const grid = document.getElementById("number-grid");
     let takenNumbers = [];
 
     async function loadParticipantsUI() {
-      const response = await fetch(`${BACKEND_URL}/participants`);
-      const data = await response.json();
-      takenNumbers = data.requests.map(r => r.number);
+      try {
+        const response = await fetch(`${BACKEND_URL}/participants`);
+        const data = await response.json();
+        takenNumbers = data.requests.map(r => r.number);
 
-      const list = document.getElementById("participantsList");
-      list.innerHTML = "";
-      data.requests.forEach(r => {
-        const li = document.createElement("li");
-        li.innerHTML = `<span class="font-bold text-yellow-300">${r.name}</span> 
-                        (<span class="text-indigo-300">${r.phone}</span>) 
-                        chose <span class="text-green-400">#${r.number}</span>`;
-        list.appendChild(li);
-      });
+        const list = document.getElementById("participantsList");
+        list.innerHTML = "";
+        data.requests.forEach(r => {
+          const li = document.createElement("li");
+          li.innerHTML = `<span class="font-bold text-yellow-300">${r.name}</span> 
+                          (<span class="text-indigo-300">${r.phone}</span>) 
+                          chose <span class="text-green-400">#${r.number}</span>`;
+          list.appendChild(li);
+        });
 
-      renderGrid();
-      loadWinnersUI();
+        renderGrid();
+        loadWinnersUI();
+      } catch (err) {
+        console.error("Failed to load participants:", err);
+      }
     }
 
     function renderGrid() {
+      console.log("Rendering grid...");
       grid.innerHTML = "";
       for (let i = 1; i <= 150; i++) {
         const btn = document.createElement("button");
@@ -105,26 +113,30 @@
       }
     }
 
-       async function loadWinnersUI() {
-      const response = await fetch(`${BACKEND_URL}/winners`);
-      const data = await response.json();
-      const container = document.getElementById("winnersRounds");
-      container.innerHTML = "";
-      data.rounds.forEach(round => {
-        const div = document.createElement("div");
-        div.className = "winner-card";
-        const title = document.createElement("h3");
-        title.className = "text-lg font-bold text-yellow-400 mb-2";
-        title.innerText = `Round ${round.round}`;
-        div.appendChild(title);
-        round.messages.forEach(msg => {
-          const li = document.createElement("p");
-          li.className = "winner-highlight";
-          li.innerText = msg;
-          div.appendChild(li);
+    async function loadWinnersUI() {
+      try {
+        const response = await fetch(`${BACKEND_URL}/winners`);
+        const data = await response.json();
+        const container = document.getElementById("winnersRounds");
+        container.innerHTML = "";
+        data.rounds.forEach(round => {
+          const div = document.createElement("div");
+          div.className = "winner-card";
+          const title = document.createElement("h3");
+          title.className = "text-lg font-bold text-yellow-400 mb-2";
+          title.innerText = `Round ${round.round}`;
+          div.appendChild(title);
+          round.messages.forEach(msg => {
+            const li = document.createElement("p");
+            li.className = "winner-highlight";
+            li.innerText = msg;
+            div.appendChild(li);
+          });
+          container.appendChild(div);
         });
-        container.appendChild(div);
-      });
+      } catch (err) {
+        console.error("Failed to load winners:", err);
+      }
     }
 
     document.getElementById("submitBtn").onclick = async () => {
@@ -144,17 +156,22 @@
       const payload = { name, phone, numbers: selected };
       console.log("Sending payload:", payload);
 
-      const response = await fetch(`${BACKEND_URL}/choose`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      try {
+        const response = await fetch(`${BACKEND_URL}/choose`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-      const data = await response.json();
-      document.getElementById("result").innerText = data.message || data.error;
-      loadParticipantsUI();
-      playDing();
-      launchConfetti();
+        const data = await response.json();
+        document.getElementById("result").innerText = data.message || data.error;
+        loadParticipantsUI();
+        playDing();
+        launchConfetti();
+      } catch (err) {
+        console.error("Failed to submit selection:", err);
+        document.getElementById("result").innerText = "❌ Submission failed.";
+      }
     };
 
     function launchConfetti() {
@@ -169,7 +186,7 @@
       }
     }
 
-    function playDing() {
+        function playDing() {
       const sound = document.getElementById("dingSound");
       sound.currentTime = 0;
       sound.play();
