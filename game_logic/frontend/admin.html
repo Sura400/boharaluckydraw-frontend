@@ -110,7 +110,6 @@
         wheel.appendChild(div);
       }
     }
-
     renderWheelNumbers();
 
     function launchConfetti() {
@@ -164,8 +163,8 @@
       }, 4000);
     };
 
-    document.getElementById("resetBtn").onclick = async () => {
-            const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST", credentials:"include" });
+        document.getElementById("resetBtn").onclick = async () => {
+      const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST", credentials:"include" });
       const data = await response.json();
       document.getElementById("results").innerHTML = "";
       document.getElementById("result").innerText = data.message || data.error;
@@ -227,4 +226,3 @@
   </script>
 </body>
 </html>
-

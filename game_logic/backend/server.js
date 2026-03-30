@@ -33,7 +33,7 @@ fs.mkdirSync("uploads", { recursive: true });
 // In-memory storage
 let participants = [];
 let winners = [];
-let secretWinner = null;
+let secretWinner = { first: null, second: null, third: null };
 let currentRound = 1;
 let spinsLeft = 3;
 
@@ -124,49 +124,45 @@ app.post("/drawWinner", (req, res) => {
     return res.status(400).json({ error: "No spins left in this round. Please reset to start next round." });
   }
 
-  // --- Superadmin override ---
-  if (secretWinner) {
-    let messages = [];
-    secretWinner.forEach((num) => {
-      const winner = participants.find(p => p.numbers.includes(num));
-      const msg = winner
-        ? `Winner: Number ${num} belongs to ${winner.name} (${winner.phone})`
-        : `Winner: Number ${num} (no participant found)`;
-      messages.push(msg);
-    });
-    winners.push({ round: currentRound, messages, set_by: "superadmin" });
-    secretWinner = null;
-    spinsLeft = 0;
-    return res.json({ messages, spinsLeft, currentRound });
-  }
+  let slot;
+  if (spinsLeft === 3) slot = "first";
+  else if (spinsLeft === 2) slot = "second";
+  else slot = "third";
 
-  // --- Normal spin ---
+  // Always spin, but override if superadmin set a number
   const allNumbers = participants.flatMap(p => p.numbers);
   const rand = allNumbers[Math.floor(Math.random() * allNumbers.length)];
-  const winner = participants.find(p => p.numbers.includes(rand));
+  const chosenNumber = secretWinner[slot] ? secretWinner[slot] : rand;
+
+  const winner = participants.find(p => p.numbers.includes(chosenNumber));
   const msg = winner
-    ? `Winner: Number ${rand} belongs to ${winner.name} (${winner.phone})`
-    : `Winner: Number ${rand} (no participant found)`;
+    ? `Winner (${slot}): Number ${chosenNumber} belongs to ${winner.name} (${winner.phone})`
+    : `Winner (${slot}): Number ${chosenNumber} (no participant found)`;
 
-  winners.push({ round: currentRound, messages: [msg], set_by: "admin" });
+  if (!winners.find(r => r.round === currentRound)) {
+    winners.push({ round: currentRound, messages: [], set_by: "admin" });
+  }
+  const roundData = winners.find(r => r.round === currentRound);
+  roundData.messages.push(msg);
+
   spinsLeft -= 1;
-
-  return res.json({ message: msg, spinsLeft, currentRound });
+  res.json({ message: msg, spinsLeft, currentRound });
 });
 
+// --- SUPERADMIN OVERRIDE ---
 app.post("/setSecretWinner", (req, res) => {
   if (!req.session.user || req.session.user.role !== "superadmin") {
     return res.status(403).json({ error: "Unauthorized - please login as superadmin" });
   }
-  const { numbers } = req.body;
-  if (!numbers || !Array.isArray(numbers) || numbers.length === 0) {
-    return res.status(400).json({ error: "Provide at least one number" });
+  const { slot, number } = req.body;
+  if (!["first","second","third"].includes(slot)) {
+    return res.status(400).json({ error: "Slot must be first, second, or third" });
   }
-  if (numbers.length > 3) {
-    return res.status(400).json({ error: "You can only set up to 3 winners" });
+  if (!number || typeof number !== "number") {
+    return res.status(400).json({ error: "Provide a valid number" });
   }
-  secretWinner = numbers;
-  res.json({ message: `Secret winners ${numbers} set successfully` });
+  secretWinner[slot] = number;
+  res.json({ message: `Superadmin set ${slot} winner to number ${number}` });
 });
 
 // --- RESET ---
@@ -175,7 +171,7 @@ app.post("/reset", (req, res) => {
     return res.status(403).json({ error: "Unauthorized - please login first" });
   }
   participants = [];
-  secretWinner = null;
+  secretWinner = { first: null, second: null, third: null };
   spinsLeft = 3;
   currentRound += 1;
   res.json({ message: `System reset successful. Starting Round ${currentRound}`, currentRound, spinsLeft });
