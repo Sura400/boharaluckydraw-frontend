@@ -17,7 +17,7 @@ app.use(session({
   secret: "SUPER_SECRET_KEY", // secure session secret
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false }
+  cookie: { secure: false } // set to true if you enable HTTPS
 }));
 
 // Uploads folder
@@ -86,10 +86,10 @@ app.post("/choose", upload.single("receipt"), (req, res) => {
   res.json({ message: `${name} (${phone}) successfully chose numbers ${chosenNumbers}` });
 });
 
-// --- REMOVE PARTICIPANT ---
+// --- REMOVE PARTICIPANT (admin & superadmin) ---
 app.post("/removeParticipant", (req, res) => {
-  if (!req.session.user || req.session.user.role !== "admin") {
-    return res.status(403).json({ error: "Unauthorized" });
+  if (!req.session.user || !["admin","superadmin"].includes(req.session.user.role)) {
+    return res.status(403).json({ error: "Unauthorized - please login as admin or superadmin" });
   }
   const { phone } = req.body;
   const index = participants.findIndex(p => p.phone === phone);
