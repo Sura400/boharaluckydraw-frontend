@@ -10,14 +10,16 @@
     .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #4f46e5;
       background: conic-gradient(#22c55e 0deg 60deg,#facc15 60deg 120deg,#3b82f6 120deg 180deg,
       #ef4444 180deg 240deg,#ec4899 240deg 300deg,#9333ea 300deg 360deg);
-      transition: transform 4s ease-out; }
+      transition: transform 4s ease-out; position: relative; }
     .arrow { position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
       width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent;
       border-bottom: 30px solid #facc15; }
     .winner-card { background:#222; padding:10px; border-radius:8px; margin-top:10px; }
     .confetti { position: fixed; width: 10px; height: 10px; top: -10px; animation: fall 3s linear forwards; opacity: 0.8; }
     @keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-    </style>
+    .wheel-number { position: absolute; width: 50%; height: 50%; text-align: center;
+      transform-origin: 100% 100%; font-size: 14px; font-weight: bold; color: white; }
+  </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
@@ -94,6 +96,23 @@
   <script>
     const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
 
+    // Add numbers around the wheel
+    function renderWheelNumbers() {
+      const wheel = document.getElementById("wheel");
+      wheel.innerHTML = "";
+      const segments = 6; // match your gradient segments
+      for (let i = 0; i < segments; i++) {
+        const num = i + 1;
+        const div = document.createElement("div");
+        div.className = "wheel-number";
+        div.style.transform = `rotate(${(360/segments)*i}deg) translate(0, -120px)`;
+        div.innerText = num;
+        wheel.appendChild(div);
+      }
+    }
+
+    renderWheelNumbers();
+
     function launchConfetti() {
       for (let i = 0; i < 100; i++) {
         const confetti = document.createElement("div");
@@ -146,7 +165,7 @@
     };
 
     document.getElementById("resetBtn").onclick = async () => {
-      const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST", credentials:"include" });
+            const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST", credentials:"include" });
       const data = await response.json();
       document.getElementById("results").innerHTML = "";
       document.getElementById("result").innerText = data.message || data.error;
@@ -208,3 +227,4 @@
   </script>
 </body>
 </html>
+

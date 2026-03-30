@@ -127,11 +127,11 @@ app.post("/drawWinner", (req, res) => {
   // --- Superadmin override ---
   if (secretWinner) {
     let messages = [];
-    secretWinner.forEach((num, idx) => {
+    secretWinner.forEach((num) => {
       const winner = participants.find(p => p.numbers.includes(num));
       const msg = winner
-        ? `Secret Winner ${idx+1}: Number ${num} belongs to ${winner.name} (${winner.phone})`
-        : `Secret Winner ${idx+1}: Number ${num} (no participant found)`;
+        ? `Winner: Number ${num} belongs to ${winner.name} (${winner.phone})`
+        : `Winner: Number ${num} (no participant found)`;
       messages.push(msg);
     });
     winners.push({ round: currentRound, messages, set_by: "superadmin" });
