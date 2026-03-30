@@ -1,7 +1,7 @@
 ﻿const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
-const multer = require("multer"); // for optional receipt uploads
+const multer = require("multer");
 const fs = require("fs");
 
 const app = express();
@@ -10,17 +10,19 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "https://boharaluckydraw-frontend7.onrender.com", // must match your frontend Render URL
+  origin: "https://boharaluckydraw-frontend7.onrender.com", // your frontend URL
   credentials: true
 }));
+app.set("trust proxy", 1); // IMPORTANT: trust Render's proxy so secure cookies work
+
 app.use(session({
-  secret: "SUPER_SECRET_KEY", // secure session secret
+  secret: "SUPER_SECRET_KEY",
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true,        // cookies only over HTTPS (Render uses HTTPS)
+    secure: true,        // cookie only over HTTPS
     sameSite: "none",    // allow cross-site cookies
-    httpOnly: true       // extra safety
+    httpOnly: true       // prevent JS tampering
   }
 }));
 
@@ -90,7 +92,7 @@ app.post("/choose", upload.single("receipt"), (req, res) => {
   res.json({ message: `${name} (${phone}) successfully chose numbers ${chosenNumbers}` });
 });
 
-// --- REMOVE PARTICIPANT (admin & superadmin) ---
+// --- REMOVE PARTICIPANT ---
 app.post("/removeParticipant", (req, res) => {
   if (!req.session.user || !["admin","superadmin"].includes(req.session.user.role)) {
     return res.status(403).json({ error: "Unauthorized - please login as admin or superadmin" });
