@@ -15,7 +15,7 @@
     <nav class="space-x-4">
       <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
       <a href="admin.html" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">🛠 Admin Panel</a>
-      <a href="/logout" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</a>
+      <button onclick="logout()" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</button>
     </nav>
   </div>
 
@@ -67,6 +67,22 @@
         </button>
       </div>
 
+      <!-- Participants Management -->
+      <div>
+        <h2 class="text-2xl font-bold text-indigo-300 mb-4">👥 Participants</h2>
+        <table class="w-full border-collapse border border-gray-700">
+          <thead>
+            <tr class="bg-gray-800">
+              <th class="border border-gray-700 px-4 py-2">Name</th>
+              <th class="border border-gray-700 px-4 py-2">Phone</th>
+              <th class="border border-gray-700 px-4 py-2">Numbers</th>
+              <th class="border border-gray-700 px-4 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="participantsTable"></tbody>
+        </table>
+      </div>
+
       <!-- Results -->
       <div id="result" class="mt-6 text-lg text-green-400 whitespace-pre-line"></div>
     </div>
@@ -78,6 +94,17 @@
   <!-- Script -->
   <script>
     const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+
+    async function logout() {
+      const response = await fetch(`${BACKEND_URL}/logout`, { method: "GET", credentials:"include" });
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message);
+        window.location.href = "login.html";
+      } else {
+        alert("Logout failed: " + (data.error || "Unknown error"));
+      }
+    }
 
     // Secret Winner Override
     document.getElementById("secretBtn").onclick = async () => {
@@ -106,7 +133,7 @@
       const response = await fetch(`${BACKEND_URL}/changePassword`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        credentials:"include",
         body: JSON.stringify({ target: "superadmin", newPassword: newPass })
       });
       const data = await response.json();
@@ -139,6 +166,43 @@
       const data = await response.json();
       document.getElementById("result").innerText = data.message || data.error;
     };
+
+    // Remove Participant (superadmin can also manage)
+    async function removeParticipant(phone) {
+      const response = await fetch(`${BACKEND_URL}/removeParticipant`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials:"include",
+        body: JSON.stringify({ phone })
+      });
+      const data = await response.json();
+      alert(data.message || data.error);
+      loadParticipants();
+    }
+
+        async function loadParticipants() {
+      const response = await fetch(`${BACKEND_URL}/participants`, { credentials: "include" });
+      const data = await response.json();
+      const table = document.getElementById("participantsTable");
+      table.innerHTML = "";
+      data.requests.forEach(r => {
+        const row = `<tr>
+          <td class="border border-gray-700 px-4 py-2">${r.name}</td>
+          <td class="border border-gray-700 px-4 py-2">${r.phone}</td>
+          <td class="border border-gray-700 px-4 py-2">${r.numbers.join(", ")}</td>
+          <td class="border border-gray-700 px-4 py-2 text-center">
+            <button onclick="removeParticipant('${r.phone}')"
+              class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-white font-bold">
+              Remove
+            </button>
+          </td>
+        </tr>`;
+        table.innerHTML += row;
+      });
+    }
+
+    // Initial load
+    loadParticipants();
   </script>
 </body>
 </html>

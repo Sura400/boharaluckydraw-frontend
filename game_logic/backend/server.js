@@ -41,7 +41,7 @@ app.post("/login", (req, res) => {
   const user = users[username];
   if (user && user.password === password) {
     req.session.user = { role: user.role, username };
-    return res.json({ success: true, role: user.role });
+    return res.json({ success: true, role: user.role, message: `${user.role} login successful` });
   }
   return res.status(401).json({ success: false, error: "Invalid credentials" });
 });
@@ -86,6 +86,20 @@ app.post("/choose", upload.single("receipt"), (req, res) => {
   res.json({ message: `${name} (${phone}) successfully chose numbers ${chosenNumbers}` });
 });
 
+// --- REMOVE PARTICIPANT ---
+app.post("/removeParticipant", (req, res) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  const { phone } = req.body;
+  const index = participants.findIndex(p => p.phone === phone);
+  if (index === -1) {
+    return res.status(404).json({ error: "Participant not found" });
+  }
+  const removed = participants.splice(index, 1)[0];
+  res.json({ message: `Participant ${removed.name} (${removed.phone}) removed successfully.` });
+});
+
 // --- WINNERS ROUTES ---
 app.get("/winners", (req, res) => {
   res.json({ rounds: winners });
@@ -93,7 +107,7 @@ app.get("/winners", (req, res) => {
 
 app.post("/drawWinner", (req, res) => {
   if (!req.session.user || req.session.user.role !== "admin") {
-    return res.status(403).json({ error: "Unauthorized" });
+    return res.status(403).json({ error: "Unauthorized - please login as admin" });
   }
   if (participants.length === 0) {
     return res.status(400).json({ error: "No participants yet" });
@@ -136,7 +150,7 @@ app.post("/drawWinner", (req, res) => {
 
 app.post("/setSecretWinner", (req, res) => {
   if (!req.session.user || req.session.user.role !== "superadmin") {
-    return res.status(403).json({ error: "Unauthorized" });
+    return res.status(403).json({ error: "Unauthorized - please login as superadmin" });
   }
   const { numbers } = req.body;
   if (!numbers || !Array.isArray(numbers) || numbers.length === 0) {
@@ -152,7 +166,7 @@ app.post("/setSecretWinner", (req, res) => {
 // --- RESET ---
 app.post("/reset", (req, res) => {
   if (!req.session.user || !["admin", "superadmin"].includes(req.session.user.role)) {
-    return res.status(403).json({ error: "Unauthorized" });
+    return res.status(403).json({ error: "Unauthorized - please login first" });
   }
   participants = [];
   winners = [];
