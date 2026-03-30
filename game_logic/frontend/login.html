@@ -6,6 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    /* Success glow animation */
+    .success-glow {
+      animation: glow 1s ease-in-out forwards;
+    }
+    @keyframes glow {
+      0% { box-shadow: 0 0 0px #22c55e; }
+      50% { box-shadow: 0 0 20px #22c55e; }
+      100% { box-shadow: 0 0 0px #22c55e; }
+    }
+  </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
@@ -19,7 +30,7 @@
 
   <!-- Login Card -->
   <div class="flex-grow flex items-center justify-center px-4">
-    <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
+    <div id="loginCard" class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
       <h2 class="text-2xl font-bold text-yellow-400 text-center mb-6">🔑 Login</h2>
 
       <form id="loginForm" class="space-y-4">
@@ -44,8 +55,7 @@
 
   <!-- Script -->
   <script>
-    // IMPORTANT: Replace with your actual backend Render URL
-    const BACKEND_URL = "https://boharaluckydraw-backend7.onrender.com";
+    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
 
     document.getElementById("loginForm").onsubmit = async (e) => {
       e.preventDefault();
@@ -62,16 +72,25 @@
         const data = await response.json();
 
         if (data.message) {
+          // Success glow animation
+          const card = document.getElementById("loginCard");
+          card.classList.add("success-glow");
+
           document.getElementById("result").innerText = "✅ " + data.message;
-          if (data.role === "admin") {
-            window.location.href = "admin.html";
-          } else if (data.role === "superadmin") {
-            window.location.href = "superadmin.html";
-          }
+
+          // Redirect after short delay
+          setTimeout(() => {
+            if (data.role === "admin") {
+              window.location.href = "admin.html";
+            } else if (data.role === "superadmin") {
+              window.location.href = "superadmin.html";
+            }
+          }, 1200);
         } else {
           document.getElementById("result").innerText = "❌ " + (data.error || "Login failed");
         }
       } catch (err) {
+        console.error("Login error:", err);
         document.getElementById("result").innerText = "❌ Error connecting to server.";
       }
     };

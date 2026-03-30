@@ -1,4 +1,4 @@
-﻿ <!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,50 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Lucky Draw Wheel */
-    .wheel-container {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      margin: auto;
-    }
-    .wheel {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      border: 8px solid #4f46e5;
-      background: conic-gradient(
-        #22c55e 0deg 60deg,
-        #facc15 60deg 120deg,
-        #3b82f6 120deg 180deg,
-        #ef4444 180deg 240deg,
-        #ec4899 240deg 300deg,
-        #9333ea 300deg 360deg
-      );
-      transition: transform 4s ease-out;
-    }
-    .arrow {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 30px solid #facc15;
-    }
-    .winner-card {
-      background:#222; padding:10px; border-radius:8px; margin-top:10px;
-    }
-    .confetti {
-      position: fixed;
-      width: 10px;
-      height: 10px;
-      top: -10px;
-      animation: fall 3s linear forwards;
-      opacity: 0.8;
-    }
+    .wheel-container { position: relative; width: 300px; height: 300px; margin: auto; }
+    .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #4f46e5;
+      background: conic-gradient(#22c55e 0deg 60deg,#facc15 60deg 120deg,#3b82f6 120deg 180deg,
+      #ef4444 180deg 240deg,#ec4899 240deg 300deg,#9333ea 300deg 360deg);
+      transition: transform 4s ease-out; }
+    .arrow { position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent;
+      border-bottom: 30px solid #facc15; }
+    .winner-card { background:#222; padding:10px; border-radius:8px; margin-top:10px; }
+    .confetti { position: fixed; width: 10px; height: 10px; top: -10px; animation: fall 3s linear forwards; opacity: 0.8; }
     @keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
   </style>
 </head>
@@ -68,30 +34,24 @@
   <div class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
     <!-- Left: Wheel, Actions & Results -->
     <div class="space-y-6 text-center">
-      <!-- Wheel -->
       <div class="wheel-container">
         <div class="arrow"></div>
         <div id="wheel" class="wheel"></div>
       </div>
 
-      <!-- Actions -->
       <div class="space-y-4 mt-6">
         <button id="drawBtn" class="w-full px-4 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold text-lg">
-          🎲 Spin & Draw Winner
+          🎲 Spin & Draw Winners
         </button>
         <button id="resetBtn" class="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold text-lg">
           🔄 Reset Game
         </button>
       </div>
 
-      <!-- Results -->
       <div id="drawArea" class="mt-6 space-y-4">
-        <div id="firstResult" class="text-xl font-bold text-indigo-300"></div>
-        <div id="secondResult" class="text-xl font-bold text-indigo-300"></div>
-        <div id="thirdResult" class="text-xl font-bold text-indigo-300"></div>
+        <div id="results" class="text-xl font-bold text-indigo-300 space-y-2"></div>
       </div>
 
-      <!-- Change Password -->
       <div class="mt-8">
         <h2 class="text-xl font-bold text-indigo-300 mb-2">🔒 Change Password</h2>
         <input type="password" id="newAdminPass" placeholder="New Password"
@@ -101,7 +61,6 @@
         </button>
       </div>
 
-      <!-- Status -->
       <div id="result" class="mt-6 text-lg text-green-400 whitespace-pre-line"></div>
     </div>
 
@@ -113,7 +72,7 @@
           <tr class="bg-gray-800">
             <th class="border border-gray-700 px-4 py-2">Name</th>
             <th class="border border-gray-700 px-4 py-2">Phone</th>
-            <th class="border border-gray-700 px-4 py-2">Number</th>
+            <th class="border border-gray-700 px-4 py-2">Numbers</th>
           </tr>
         </thead>
         <tbody id="participantsTable"></tbody>
@@ -121,22 +80,19 @@
     </div>
   </div>
 
-  <!-- Footer -->
   <div class="footer text-center py-4 bg-indigo-700 text-white">Powered by Bohara Lucky Draw • Admin Control Panel</div>
 
-  <!-- Sound -->
   <audio id="dingSound" src="/static/ding.mp3" preload="auto"></audio>
 
-  <!-- Script -->
   <script>
-    let drawStep = 0;
+    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
 
     function launchConfetti() {
       for (let i = 0; i < 100; i++) {
         const confetti = document.createElement("div");
         confetti.className = "confetti";
         confetti.style.left = Math.random() * window.innerWidth + "px";
-        confetti.style.backgroundColor = ["#facc15", "#22c55e", "#3b82f6", "#ef4444", "#ec4899"][Math.floor(Math.random()*5)];
+        confetti.style.backgroundColor = ["#facc15","#22c55e","#3b82f6","#ef4444","#ec4899"][Math.floor(Math.random()*5)];
         confetti.style.animationDuration = (2 + Math.random() * 3) + "s";
         document.body.appendChild(confetti);
         setTimeout(() => confetti.remove(), 5000);
@@ -150,72 +106,49 @@
     }
 
     document.getElementById("drawBtn").onclick = async () => {
-      drawStep++;
-      if (drawStep > 3) {
-        alert("All three winners have already been drawn!");
-        return;
-      }
-
-      // Spin the wheel
       const wheel = document.getElementById("wheel");
       const spinDegrees = 720 + Math.floor(Math.random() * 360);
       wheel.style.transform = `rotate(${spinDegrees}deg)`;
 
-      // Call backend draw
-      const response = await fetch("/draw", { method: "POST" });
+      const response = await fetch(`${BACKEND_URL}/drawWinner`, { method: "POST", credentials:"include" });
       const data = await response.json();
 
       if (data.messages) {
         setTimeout(() => {
-          const targetId = drawStep === 1 ? "firstResult" : drawStep === 2 ? "secondResult" : "thirdResult";
-          let icon = drawStep === 1 ? "🚗" : drawStep === 2 ? "💵" : "🎰";
-          document.getElementById(targetId).innerHTML = `
-            <div class="winner-card">${icon} ${data.messages[drawStep-1]}</div>`;
+          document.getElementById("results").innerHTML = data.messages.map(m => `<div class="winner-card">🎉 ${m}</div>`).join("");
           playDing();
-          if (drawStep === 3) launchConfetti();
-        }, 4000); // wait for wheel spin
+          launchConfetti();
+        }, 4000);
       } else {
         document.getElementById("result").innerText = data.error || "Error during draw";
       }
     };
 
     document.getElementById("resetBtn").onclick = async () => {
-      const response = await fetch("/reset", { method: "POST" });
+      const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST", credentials:"include" });
       const data = await response.json();
-      document.getElementById("firstResult").innerText = "";
-      document.getElementById("secondResult").innerText = "";
-      document.getElementById("thirdResult").innerText = "";
-      drawStep = 0;
+      document.getElementById("results").innerHTML = "";
       document.getElementById("result").innerText = data.message || data.error;
     };
 
     document.getElementById("changePassBtn").onclick = async () => {
       const newPass = document.getElementById("newAdminPass").value;
-      const response = await fetch("/admin/change_password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: newPass })
-      });
-      const data = await response.json();
-          document.getElementById("changePassBtn").onclick = async () => {
-      const newPass = document.getElementById("newAdminPass").value;
       if (!newPass) {
         document.getElementById("result").innerText = "⚠️ Please enter a new password.";
         return;
       }
-
-      const response = await fetch("/admin/change_password", {
+      const response = await fetch(`${BACKEND_URL}/changePassword`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: newPass })
+        credentials:"include",
+        body: JSON.stringify({ target:"admin", newPassword:newPass })
       });
-
       const data = await response.json();
       document.getElementById("result").innerText = data.message || data.error;
     };
 
     async function loadParticipants() {
-      const response = await fetch("/participants");
+      const response = await fetch(`${BACKEND_URL}/participants`);
       const data = await response.json();
       const table = document.getElementById("participantsTable");
       table.innerHTML = "";
@@ -223,13 +156,12 @@
         const row = `<tr>
           <td class="border border-gray-700 px-4 py-2">${r.name}</td>
           <td class="border border-gray-700 px-4 py-2">${r.phone}</td>
-          <td class="border border-gray-700 px-4 py-2">${r.number}</td>
+          <td class="border border-gray-700 px-4 py-2">${r.numbers.join(", ")}</td>
         </tr>`;
         table.innerHTML += row;
       });
     }
 
-    // Initial load
     loadParticipants();
   </script>
 </body>
