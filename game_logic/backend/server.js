@@ -17,7 +17,10 @@ app.use(session({
   secret: "SUPER_SECRET_KEY", // secure session secret
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // set to true if you enable HTTPS
+  cookie: {
+    secure: true,        // cookies only over HTTPS
+    sameSite: "none"     // allow cross-site cookies
+  }
 }));
 
 // Uploads folder
