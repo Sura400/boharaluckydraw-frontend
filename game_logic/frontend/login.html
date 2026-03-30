@@ -55,7 +55,7 @@
 
   <!-- Script -->
   <script>
-    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com"; // replace with your actual backend URL
 
     document.getElementById("loginForm").onsubmit = async (e) => {
       e.preventDefault();
@@ -66,17 +66,17 @@
         const response = await fetch(`${BACKEND_URL}/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
+          credentials: "include", // critical for session cookies
           body: JSON.stringify({ username, password })
         });
         const data = await response.json();
 
-        if (data.message) {
+        if (response.ok && data.success) {
           // Success glow animation
           const card = document.getElementById("loginCard");
           card.classList.add("success-glow");
 
-          document.getElementById("result").innerText = "✅ " + data.message;
+          document.getElementById("result").innerText = "✅ " + (data.message || "Login successful");
 
           // Redirect after short delay
           setTimeout(() => {

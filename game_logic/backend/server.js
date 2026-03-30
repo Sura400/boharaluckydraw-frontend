@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "https://boharaluckydraw-frontend7.onrender.com",
+  origin: "https://boharaluckydraw-frontend7.onrender.com", // must match your frontend Render URL
   credentials: true
 }));
 app.use(session({
@@ -31,14 +31,8 @@ let secretWinner = null;
 
 // Hard-coded users
 const users = {
-  admin: {
-    password: "Bohara2026",
-    role: "admin"
-  },
-  superadmin: {
-    password: "sura@2026",
-    role: "superadmin"
-  }
+  admin: { password: "Bohara2026", role: "admin" },
+  superadmin: { password: "sura@2026", role: "superadmin" }
 };
 
 // --- AUTH ROUTES ---
@@ -47,9 +41,9 @@ app.post("/login", (req, res) => {
   const user = users[username];
   if (user && user.password === password) {
     req.session.user = { role: user.role, username };
-    return res.json({ message: `${user.role} login successful`, role: user.role });
+    return res.json({ success: true, role: user.role });
   }
-  return res.status(401).json({ error: "Invalid credentials" });
+  return res.status(401).json({ success: false, error: "Invalid credentials" });
 });
 
 app.get("/logout", (req, res) => {
