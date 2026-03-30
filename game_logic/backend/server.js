@@ -13,7 +13,7 @@ app.use(cors({
   origin: "https://boharaluckydraw-frontend7.onrender.com", // your frontend URL
   credentials: true
 }));
-app.set("trust proxy", 1); // IMPORTANT: trust Render's proxy so secure cookies work
+app.set("trust proxy", 1); // trust Render's proxy so secure cookies work
 
 app.use(session({
   secret: "SUPER_SECRET_KEY",
@@ -34,6 +34,8 @@ fs.mkdirSync("uploads", { recursive: true });
 let participants = [];
 let winners = [];
 let secretWinner = null;
+let currentRound = 1;
+let spinsLeft = 3; // each round has 3 spins
 
 // Hard-coded users
 const users = {
@@ -118,40 +120,39 @@ app.post("/drawWinner", (req, res) => {
   if (participants.length === 0) {
     return res.status(400).json({ error: "No participants yet" });
   }
+  if (spinsLeft <= 0) {
+    return res.status(400).json({ error: "No spins left in this round. Please reset to start next round." });
+  }
 
   let messages = [];
-  const labels = ["First", "Second", "Third"];
 
   if (secretWinner) {
     secretWinner.forEach((num, idx) => {
       const winner = participants.find(p => p.numbers.includes(num));
       const msg = winner
-        ? `${labels[idx]} Winner: Number ${num} belongs to ${winner.name} (${winner.phone})`
-        : `${labels[idx]} Winner: Number ${num} (no participant found)`;
+        ? `Secret Winner ${idx+1}: Number ${num} belongs to ${winner.name} (${winner.phone})`
+        : `Secret Winner ${idx+1}: Number ${num} (no participant found)`;
       messages.push(msg);
     });
-    winners.push({ round: winners.length + 1, messages, set_by: "superadmin" });
+    winners.push({ round: currentRound, messages, set_by: "superadmin" });
     secretWinner = null;
-    return res.json({ messages, note: "Super Admin winners applied" });
+    spinsLeft = 0; // round ends immediately if superadmin overrides
+    return res.json({ messages, note: "Super Admin winners applied", spinsLeft, currentRound });
   }
 
   const allNumbers = participants.flatMap(p => p.numbers);
-  const winningNumbers = [];
-  while (winningNumbers.length < 3 && allNumbers.length > 0) {
-    const rand = allNumbers[Math.floor(Math.random() * allNumbers.length)];
-    if (!winningNumbers.includes(rand)) winningNumbers.push(rand);
-  }
+  const rand = allNumbers[Math.floor(Math.random() * allNumbers.length)];
+  const winner = participants.find(p => p.numbers.includes(rand));
+  const msg = winner
+    ? `Winner: Number ${rand} belongs to ${winner.name} (${winner.phone})`
+    : `Winner: Number ${rand} (no participant found)`;
 
-  winningNumbers.forEach((num, idx) => {
-    const winner = participants.find(p => p.numbers.includes(num));
-    const msg = winner
-      ? `${labels[idx]} Winner: Number ${num} belongs to ${winner.name} (${winner.phone})`
-      : `${labels[idx]} Winner: Number ${num} (no participant found)`;
-    messages.push(msg);
-  });
+  messages.push(msg);
+  winners.push({ round: currentRound, messages, set_by: "admin" });
 
-  winners.push({ round: winners.length + 1, messages, set_by: "admin" });
-  res.json({ winners: winningNumbers, messages });
+  spinsLeft -= 1;
+
+  res.json({ winner: rand, message: msg, spinsLeft, currentRound });
 });
 
 app.post("/setSecretWinner", (req, res) => {
@@ -175,9 +176,10 @@ app.post("/reset", (req, res) => {
     return res.status(403).json({ error: "Unauthorized - please login first" });
   }
   participants = [];
-  winners = [];
   secretWinner = null;
-  res.json({ message: "System reset successful" });
+  spinsLeft = 3;
+  currentRound += 1;
+  res.json({ message: `System reset successful. Starting Round ${currentRound}`, currentRound, spinsLeft });
 });
 
 // --- SERVER START ---
