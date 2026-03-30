@@ -62,16 +62,18 @@ app.post("/choose", (req, res) => {
     return res.status(400).json({ error: "Missing participant info" });
   }
 
-  // Prevent duplicate number selection
+  // Validate number range and prevent duplicates
   for (let num of numbers) {
-    if (participants.find(p => p.number === num)) {
+    if (num < 1 || num > 150) {
+      return res.status(400).json({ error: `Number ${num} is out of range (1–150)` });
+    }
+    if (participants.find(p => p.numbers.includes(num))) {
       return res.status(400).json({ error: `Number ${num} already taken` });
     }
   }
 
-  numbers.forEach(num => {
-    participants.push({ name, phone, number: num });
-  });
+  // ✅ Store all chosen numbers in one participant object
+  participants.push({ name, phone, numbers });
 
   res.json({ message: "Selection successful!" });
 });
@@ -94,16 +96,16 @@ app.post("/drawWinner", (req, res) => {
     secretWinner = null; // clear after use
   } else {
     // Normal random draw
-    const availableNumbers = participants.map(p => p.number);
+    const availableNumbers = participants.flatMap(p => p.numbers);
     if (availableNumbers.length === 0) {
       return res.status(400).json({ error: "No participants to draw from" });
     }
     chosenNumber = availableNumbers[Math.floor(Math.random() * availableNumbers.length)];
   }
 
-  const winner = participants.find(p => p.number === chosenNumber);
+  const winner = participants.find(p => p.numbers.includes(chosenNumber));
   const round = winners.length + 1;
-  const message = winner ? `${winner.name} (${winner.phone}) won with #${winner.number}` : `No winner found`;
+  const message = winner ? `${winner.name} (${winner.phone}) won with #${chosenNumber}` : `No winner found`;
 
   winners.push({ round, messages: [message] });
   res.json({ message: "Winner drawn", result: message });

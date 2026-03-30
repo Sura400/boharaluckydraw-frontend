@@ -170,15 +170,18 @@
     async function loadParticipantsUI() {
       const response = await fetch(`${BACKEND_URL}/participants`);
       const data = await response.json();
-      takenNumbers = data.requests.map(r => r.number);
+
+      // Flatten all chosen numbers into integers
+      takenNumbers = data.requests.flatMap(r => r.numbers.map(num => parseInt(num)));
 
       const list = document.getElementById("participantsList");
       list.innerHTML = "";
       data.requests.forEach(r => {
+        const nums = r.numbers.join(", "); // ✅ show all numbers in one line
         const li = document.createElement("li");
         li.innerHTML = `<span class="font-bold text-yellow-300">${r.name}</span> 
                         (<span class="text-indigo-300">${r.phone}</span>) 
-                        chose <span class="text-green-400">#${r.number}</span>`;
+                        chose <span class="text-green-400">#${nums}</span>`;
         list.appendChild(li);
       });
 
@@ -212,15 +215,18 @@
       data.rounds.forEach(round => {
                 const div = document.createElement("div");
         div.className = "winner-card";
+
         const title = document.createElement("h3");
         title.className = "text-lg font-bold text-yellow-400 mb-2";
         title.innerText = `Round ${round.round}`;
         div.appendChild(title);
+
         round.messages.forEach(msg => {
           const p = document.createElement("p");
           p.innerText = msg;
           div.appendChild(p);
         });
+
         container.appendChild(div);
       });
     }
