@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
 const multer = require("multer");
@@ -13,16 +13,16 @@ app.use(cors({
   origin: "https://boharaluckydraw-frontend7.onrender.com", // your frontend URL
   credentials: true
 }));
-app.set("trust proxy", 1); // trust Render's proxy so secure cookies work
+app.set("trust proxy", 1);
 
 app.use(session({
   secret: "SUPER_SECRET_KEY",
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true,        // cookie only over HTTPS
-    sameSite: "none",    // allow cross-site cookies
-    httpOnly: true       // prevent JS tampering
+    secure: true,
+    sameSite: "none",
+    httpOnly: true
   }
 }));
 
@@ -35,7 +35,7 @@ let participants = [];
 let winners = [];
 let secretWinner = null;
 let currentRound = 1;
-let spinsLeft = 3; // each round has 3 spins
+let spinsLeft = 3;
 
 // Hard-coded users
 const users = {
@@ -124,9 +124,9 @@ app.post("/drawWinner", (req, res) => {
     return res.status(400).json({ error: "No spins left in this round. Please reset to start next round." });
   }
 
-  let messages = [];
-
+  // --- Superadmin override ---
   if (secretWinner) {
+    let messages = [];
     secretWinner.forEach((num, idx) => {
       const winner = participants.find(p => p.numbers.includes(num));
       const msg = winner
@@ -136,10 +136,11 @@ app.post("/drawWinner", (req, res) => {
     });
     winners.push({ round: currentRound, messages, set_by: "superadmin" });
     secretWinner = null;
-    spinsLeft = 0; // round ends immediately if superadmin overrides
-    return res.json({ messages, note: "Super Admin winners applied", spinsLeft, currentRound });
+    spinsLeft = 0;
+    return res.json({ messages, spinsLeft, currentRound });
   }
 
+  // --- Normal spin ---
   const allNumbers = participants.flatMap(p => p.numbers);
   const rand = allNumbers[Math.floor(Math.random() * allNumbers.length)];
   const winner = participants.find(p => p.numbers.includes(rand));
@@ -147,12 +148,10 @@ app.post("/drawWinner", (req, res) => {
     ? `Winner: Number ${rand} belongs to ${winner.name} (${winner.phone})`
     : `Winner: Number ${rand} (no participant found)`;
 
-  messages.push(msg);
-  winners.push({ round: currentRound, messages, set_by: "admin" });
-
+  winners.push({ round: currentRound, messages: [msg], set_by: "admin" });
   spinsLeft -= 1;
 
-  res.json({ winner: rand, message: msg, spinsLeft, currentRound });
+  return res.json({ message: msg, spinsLeft, currentRound });
 });
 
 app.post("/setSecretWinner", (req, res) => {

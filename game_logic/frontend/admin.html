@@ -17,7 +17,7 @@
     .winner-card { background:#222; padding:10px; border-radius:8px; margin-top:10px; }
     .confetti { position: fixed; width: 10px; height: 10px; top: -10px; animation: fall 3s linear forwards; opacity: 0.8; }
     @keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-  </style>
+    </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
@@ -131,17 +131,18 @@
       const response = await fetch(`${BACKEND_URL}/drawWinner`, { method: "POST", credentials:"include" });
       const data = await response.json();
 
-      if (response.ok) {
-        setTimeout(() => {
-          document.getElementById("results").innerHTML = `<div class="winner-card">🎉 ${data.message}</div>`;
-          document.getElementById("roundDisplay").textContent = data.currentRound;
-          document.getElementById("spinsDisplay").textContent = data.spinsLeft;
-          playDing();
-          launchConfetti();
-        }, 4000);
-      } else {
-        document.getElementById("result").innerText = data.error || "Error during draw";
-      }
+      setTimeout(() => {
+        if (data.message) {
+          document.getElementById("results").innerHTML += `<div class="winner-card">🎉 ${data.message}</div>`;
+        }
+        if (data.messages) {
+          document.getElementById("results").innerHTML += data.messages.map(m => `<div class="winner-card">🎉 ${m}</div>`).join("");
+        }
+        document.getElementById("roundDisplay").textContent = data.currentRound;
+        document.getElementById("spinsDisplay").textContent = data.spinsLeft;
+        playDing();
+        launchConfetti();
+      }, 4000);
     };
 
     document.getElementById("resetBtn").onclick = async () => {
@@ -159,7 +160,7 @@
         document.getElementById("result").innerText = "⚠️ Please enter a new password.";
         return;
       }
-            const response = await fetch(`${BACKEND_URL}/changePassword`, {
+      const response = await fetch(`${BACKEND_URL}/changePassword`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials:"include",
@@ -207,4 +208,3 @@
   </script>
 </body>
 </html>
-
