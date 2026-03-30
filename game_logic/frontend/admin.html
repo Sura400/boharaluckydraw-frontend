@@ -39,9 +39,15 @@
         <div id="wheel" class="wheel"></div>
       </div>
 
+      <!-- Round & Spins Status -->
+      <div id="gameStatus" class="mt-4 text-lg font-bold text-indigo-300">
+        <p>Current Round: <span id="roundDisplay">1</span></p>
+        <p>Spins Left: <span id="spinsDisplay">3</span></p>
+      </div>
+
       <div class="space-y-4 mt-6">
         <button id="drawBtn" class="w-full px-4 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold text-lg">
-          🎲 Spin & Draw Winners
+          🎲 Spin & Draw Winner
         </button>
         <button id="resetBtn" class="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold text-lg">
           🔄 Reset Game
@@ -125,9 +131,11 @@
       const response = await fetch(`${BACKEND_URL}/drawWinner`, { method: "POST", credentials:"include" });
       const data = await response.json();
 
-      if (data.messages) {
+      if (response.ok) {
         setTimeout(() => {
-          document.getElementById("results").innerHTML = data.messages.map(m => `<div class="winner-card">🎉 ${m}</div>`).join("");
+          document.getElementById("results").innerHTML = `<div class="winner-card">🎉 ${data.message}</div>`;
+          document.getElementById("roundDisplay").textContent = data.currentRound;
+          document.getElementById("spinsDisplay").textContent = data.spinsLeft;
           playDing();
           launchConfetti();
         }, 4000);
@@ -141,6 +149,8 @@
       const data = await response.json();
       document.getElementById("results").innerHTML = "";
       document.getElementById("result").innerText = data.message || data.error;
+      document.getElementById("roundDisplay").textContent = data.currentRound;
+      document.getElementById("spinsDisplay").textContent = data.spinsLeft;
     };
 
     document.getElementById("changePassBtn").onclick = async () => {
@@ -149,7 +159,7 @@
         document.getElementById("result").innerText = "⚠️ Please enter a new password.";
         return;
       }
-      const response = await fetch(`${BACKEND_URL}/changePassword`, {
+            const response = await fetch(`${BACKEND_URL}/changePassword`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials:"include",
@@ -171,7 +181,7 @@
       loadParticipants();
     }
 
-        async function loadParticipants() {
+    async function loadParticipants() {
       const response = await fetch(`${BACKEND_URL}/participants`, { credentials: "include" });
       const data = await response.json();
       const table = document.getElementById("participantsTable");
@@ -197,3 +207,4 @@
   </script>
 </body>
 </html>
+
