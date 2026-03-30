@@ -18,8 +18,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true,        // cookies only over HTTPS
-    sameSite: "none"     // allow cross-site cookies
+    secure: true,        // cookies only over HTTPS (Render uses HTTPS)
+    sameSite: "none",    // allow cross-site cookies
+    httpOnly: true       // extra safety
   }
 }));
 
