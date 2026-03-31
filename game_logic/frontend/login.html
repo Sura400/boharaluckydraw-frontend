@@ -7,7 +7,19 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
-    /* Success glow animation */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: url('static/background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.7);
+      z-index: -1;
+    }
     .success-glow {
       animation: glow 1s ease-in-out forwards;
     }
@@ -18,39 +30,39 @@
     }
   </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+<body class="text-white min-h-screen flex flex-col">
 
   <!-- Top Bar -->
   <div class="flex justify-between items-center bg-gradient-to-r from-indigo-700 to-purple-700 p-4 shadow-lg">
     <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400 font-orbitron">🎉 Bohara Lucky Draw</h1>
     <nav class="space-x-4">
-      <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
+      <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold shadow-md">🏠 User Portal</a>
     </nav>
   </div>
 
   <!-- Login Card -->
   <div class="flex-grow flex items-center justify-center px-4">
-    <div id="loginCard" class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
-      <h2 class="text-2xl font-bold text-yellow-400 text-center mb-6">🔑 Login</h2>
+    <div id="loginCard" class="bg-gray-800/80 backdrop-blur-md p-6 rounded-xl shadow-2xl w-full max-w-sm border border-indigo-500">
+      <h2 class="text-2xl font-bold text-yellow-400 text-center mb-6 font-orbitron">🔑 Secure Login</h2>
 
       <form id="loginForm" class="space-y-4">
         <input type="text" id="username" placeholder="Username"
-               class="w-full p-3 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+               class="w-full p-3 rounded-lg bg-gray-700 text-white border border-indigo-500 focus:outline-none focus:ring-2 focus:ring-yellow-400">
         <input type="password" id="password" placeholder="Password"
-               class="w-full p-3 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+               class="w-full p-3 rounded-lg bg-gray-700 text-white border border-indigo-500 focus:outline-none focus:ring-2 focus:ring-yellow-400">
         <button type="submit"
-                class="w-full py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">
-          Login
+                class="w-full py-3 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 rounded-lg text-white font-bold text-lg shadow-lg transform transition hover:scale-105 flex items-center justify-center gap-2">
+          🔐 Login
         </button>
       </form>
 
-      <div id="result" class="mt-4 text-center text-red-400"></div>
+      <div id="result" class="mt-4 text-center text-red-400 font-bold"></div>
     </div>
   </div>
 
   <!-- Footer -->
-  <div class="text-center py-4 bg-gradient-to-r from-indigo-700 to-purple-700 text-white">
-    Powered by Bohara Lucky Draw • Secure Login
+  <div class="text-center py-4 bg-gradient-to-r from-indigo-700 to-purple-700 text-white shadow-lg">
+    Powered by Bohara Lucky Draw • Secure & Transparent
   </div>
 
   <!-- Script -->
@@ -80,10 +92,8 @@
 
           // Redirect after short delay
           setTimeout(() => {
-            if (data.role === "admin") {
-              window.location.href = "admin.html";
-            } else if (data.role === "superadmin") {
-              window.location.href = "superadmin.html";
+            if (data.role === "admin" || data.role === "superadmin") {
+              window.location.href = "admin.html"; // superadmin also enters via admin.html
             }
           }, 1200);
         } else {
