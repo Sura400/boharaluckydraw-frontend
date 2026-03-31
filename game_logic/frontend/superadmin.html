@@ -26,9 +26,15 @@
       <!-- Secret Winner Override -->
       <div>
         <h2 class="text-xl font-bold text-yellow-400 mb-2">🕵️ Secret Winner Override</h2>
-        <p class="text-sm text-gray-300 mb-2">Set up to 3 secret winner numbers. This will override the admin’s draw without them knowing.</p>
-        <input type="text" id="secretNumbers" placeholder="e.g. 12,45,78"
+        <p class="text-sm text-gray-300 mb-2">Set secret winners for each slot (optional). Leave blank if no override.</p>
+        
+        <input type="number" id="firstSlot" placeholder="First slot number"
                class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <input type="number" id="secondSlot" placeholder="Second slot number"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+        <input type="number" id="thirdSlot" placeholder="Third slot number"
+               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+
         <button id="secretBtn" class="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-400 rounded-lg text-black font-bold">
           Set Secret Winners
         </button>
@@ -108,19 +114,25 @@
 
     // Secret Winner Override
     document.getElementById("secretBtn").onclick = async () => {
-      const nums = document.getElementById("secretNumbers").value.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n));
-      if (nums.length === 0) {
-        document.getElementById("result").innerText = "⚠️ Please enter at least one number.";
-        return;
+      const overrides = [
+        { slot: "first", number: parseInt(document.getElementById("firstSlot").value) },
+        { slot: "second", number: parseInt(document.getElementById("secondSlot").value) },
+        { slot: "third", number: parseInt(document.getElementById("thirdSlot").value) }
+      ];
+
+      document.getElementById("result").innerText = ""; // clear previous
+      for (const o of overrides) {
+        if (!isNaN(o.number)) {
+          const response = await fetch(`${BACKEND_URL}/setSecretWinner`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(o)
+          });
+          const data = await response.json();
+          document.getElementById("result").innerText += (data.message || data.error) + "\n";
+        }
       }
-      const response = await fetch(`${BACKEND_URL}/setSecretWinner`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ numbers: nums })
-      });
-      const data = await response.json();
-      document.getElementById("result").innerText = data.message || data.error;
     };
 
     // Change Super Admin Password
@@ -167,20 +179,20 @@
       document.getElementById("result").innerText = data.message || data.error;
     };
 
-    // Remove Participant (superadmin can also manage)
+    // Remove Participant
     async function removeParticipant(phone) {
       const response = await fetch(`${BACKEND_URL}/removeParticipant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials:"include",
-        body: JSON.stringify({ phone })
+                body: JSON.stringify({ phone })
       });
       const data = await response.json();
       alert(data.message || data.error);
       loadParticipants();
     }
 
-        async function loadParticipants() {
+    async function loadParticipants() {
       const response = await fetch(`${BACKEND_URL}/participants`, { credentials: "include" });
       const data = await response.json();
       const table = document.getElementById("participantsTable");
