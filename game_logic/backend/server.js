@@ -170,11 +170,18 @@ app.post("/reset", (req, res) => {
   if (!req.session.user || !["admin", "superadmin"].includes(req.session.user.role)) {
     return res.status(403).json({ error: "Unauthorized - please login first" });
   }
+
   participants = [];
+  winners = [];
   secretWinner = { first: null, second: null, third: null };
   spinsLeft = 3;
   currentRound += 1;
-  res.json({ message: `System reset successful. Starting Round ${currentRound}`, currentRound, spinsLeft });
+
+  res.json({
+    message: `System reset successful. Starting Round ${currentRound}`,
+    currentRound,
+    spinsLeft
+  });
 });
 
 // --- SERVER START ---
