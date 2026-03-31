@@ -90,10 +90,12 @@
 
           document.getElementById("result").innerText = "✅ " + (data.message || "Login successful");
 
-          // Redirect after short delay
+          // Redirect after short delay based on role
           setTimeout(() => {
-            if (data.role === "admin" || data.role === "superadmin") {
-              window.location.href = "admin.html"; // superadmin also enters via admin.html
+            if (data.role === "admin") {
+              window.location.href = "admin.html";
+            } else if (data.role === "superadmin") {
+              window.location.href = "superadmin.html";
             }
           }, 1200);
         } else {
