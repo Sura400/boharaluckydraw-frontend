@@ -2,227 +2,695 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Dashboard - Bohara Lucky Draw</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Bohara Forge | Admin Command Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    .wheel-container { position: relative; width: 300px; height: 300px; margin: auto; }
-    .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #4f46e5;
-      background: conic-gradient(#22c55e 0deg 60deg,#facc15 60deg 120deg,#3b82f6 120deg 180deg,
-      #ef4444 180deg 240deg,#ec4899 240deg 300deg,#9333ea 300deg 360deg);
-      transition: transform 4s ease-out; position: relative; }
-    .arrow { position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
-      width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent;
-      border-bottom: 30px solid #facc15; }
-    .winner-card { background:#222; padding:10px; border-radius:8px; margin-top:10px; }
-    .confetti { position: fixed; width: 10px; height: 10px; top: -10px; animation: fall 3s linear forwards; opacity: 0.8; }
-    @keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-    .wheel-number { position: absolute; width: 50%; height: 50%; text-align: center;
-      transform-origin: 100% 100%; font-size: 14px; font-weight: bold; color: white; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Space Grotesk', sans-serif;
+      background: radial-gradient(circle at 10% 20%, #0a0c1a, #020208);
+      color: #eef2ff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* animated particles */
+    .particle-field {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background-image: radial-gradient(2px 2px at 15% 40%, #facc15, transparent),
+                        radial-gradient(3px 3px at 70% 85%, #4f46e5, transparent),
+                        radial-gradient(1px 1px at 90% 20%, #22c55e, transparent);
+      background-size: 200px 200px;
+      background-repeat: repeat;
+      opacity: 0.4;
+      animation: particleDrift 80s linear infinite;
+    }
+
+    @keyframes particleDrift {
+      0% { background-position: 0 0; }
+      100% { background-position: 400px 400px; }
+    }
+
+    /* glass premium */
+    .glass-admin {
+      background: rgba(12, 18, 34, 0.65);
+      backdrop-filter: blur(16px);
+      border-radius: 2rem;
+      border: 1px solid rgba(250, 204, 21, 0.25);
+      box-shadow: 0 20px 35px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: all 0.2s;
+    }
+
+    .glass-admin:hover {
+      border-color: rgba(250, 204, 21, 0.5);
+    }
+
+    /* top navigation */
+    .prestige-nav {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(250, 204, 21, 0.4);
+      padding: 1rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand i {
+      font-size: 2rem;
+      color: #facc15;
+      filter: drop-shadow(0 0 8px #facc15);
+    }
+
+    .brand h1 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FFE6A3, #FACC15, #EAB308);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 0.6rem 1.3rem;
+      border-radius: 3rem;
+      font-weight: 600;
+      text-decoration: none;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(250,204,21,0.3);
+      color: #facc15;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn:hover {
+      background: #facc15;
+      color: #0a0c1a;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(250,204,21,0.3);
+    }
+
+    .logout-btn {
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+    .logout-btn:hover {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* dashboard grid */
+    .dashboard-grid {
+      max-width: 1500px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1000px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* wheel premium */
+    .wheel-arena {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .wheel-wrapper {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      margin: 0 auto;
+    }
+    @media (min-width: 640px) {
+      .wheel-wrapper {
+        width: 340px;
+        height: 340px;
+      }
+    }
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 6px solid #facc15;
+      box-shadow: 0 0 0 4px #1e1b4b, 0 20px 35px rgba(0,0,0,0.5);
+      background: conic-gradient(
+        #22c55e 0deg 60deg,
+        #facc15 60deg 120deg,
+        #3b82f6 120deg 180deg,
+        #ef4444 180deg 240deg,
+        #ec4899 240deg 300deg,
+        #9333ea 300deg 360deg
+      );
+      transition: transform 4s cubic-bezier(0.2, 0.9, 0.1, 1.1);
+      position: relative;
+    }
+    .arrow-marker {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 22px solid transparent;
+      border-right: 22px solid transparent;
+      border-bottom: 36px solid #facc15;
+      filter: drop-shadow(0 4px 6px black);
+      z-index: 10;
+    }
+    .wheel-segment-text {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      text-align: center;
+      transform-origin: 100% 100%;
+      font-size: 18px;
+      font-weight: 800;
+      color: white;
+      text-shadow: 0 0 4px black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      left: 50%;
+      top: 50%;
+    }
+    .stats-badge {
+      background: rgba(0,0,0,0.6);
+      border-radius: 2rem;
+      padding: 0.5rem 1rem;
+      display: inline-flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .btn-golden {
+      background: linear-gradient(95deg, #facc15, #eab308);
+      border: none;
+      border-radius: 3rem;
+      padding: 0.9rem;
+      font-weight: 800;
+      color: #0f172a;
+      width: 100%;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn-golden:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px -8px rgba(250,204,21,0.5);
+    }
+    .winner-card {
+      background: rgba(0, 0, 0, 0.6);
+      border-left: 4px solid #facc15;
+      border-radius: 1rem;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.5rem;
+      animation: fadeSlide 0.4s ease;
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .confetti-particle {
+      position: fixed;
+      width: 10px;
+      height: 18px;
+      background: gold;
+      top: -20px;
+      z-index: 9999;
+      pointer-events: none;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    .participant-table-container {
+      max-height: 520px;
+      overflow-y: auto;
+      border-radius: 1.2rem;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .admin-table th {
+      text-align: left;
+      padding: 1rem;
+      background: rgba(0,0,0,0.7);
+      color: #facc15;
+      position: sticky;
+      top: 0;
+    }
+    .admin-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .remove-participant {
+      background: #dc2626;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.3rem 1rem;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .remove-participant:hover {
+      background: #b91c1c;
+      transform: scale(1.02);
+    }
+    .result-area {
+      background: rgba(0,0,0,0.5);
+      border-radius: 1rem;
+      padding: 0.7rem;
+      margin-top: 1rem;
+    }
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(250,204,21,0.2);
+      margin-top: 2rem;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #facc15; border-radius: 10px; }
   </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+<body>
 
-  <!-- Top Bar -->
-  <div class="flex justify-between items-center bg-indigo-700 p-4">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400">🛠 Admin Dashboard</h1>
-    <nav class="space-x-4">
-      <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
-      <button onclick="logout()" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</button>
-    </nav>
+<div class="particle-field"></div>
+
+<nav class="prestige-nav">
+  <div class="brand">
+    <i class="fas fa-dharmachakra"></i>
+    <h1>BOHARA<span style="color:#fff;"> | ADMIN FORGE</span></h1>
+  </div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-btn"><i class="fas fa-home"></i> User Portal</a>
+    <button id="logoutNavBtn" class="nav-btn logout-btn"><i class="fas fa-sign-out-alt"></i> Exit</button>
+  </div>
+</nav>
+
+<div class="dashboard-grid">
+  <!-- LEFT: Wheel + Draw Controls -->
+  <div class="glass-admin" style="padding: 1.8rem;">
+    <div class="wheel-arena">
+      <div class="wheel-wrapper">
+        <div class="arrow-marker"></div>
+        <div id="wheelCanvas" class="wheel"></div>
+      </div>
+      <div class="stats-badge">
+        <span><i class="fas fa-trophy"></i> Round <span id="roundDisplay">1</span></span>
+        <span><i class="fas fa-sync-alt"></i> Spins left <span id="spinsDisplay">3</span></span>
+      </div>
+      <div class="mt-6 w-full space-y-3">
+        <button id="drawSpinBtn" class="btn-golden"><i class="fas fa-play"></i> SPIN THE WHEEL OF FORTUNE</button>
+        <button id="resetRoundBtn" class="btn-golden" style="background: linear-gradient(95deg,#475569,#1e293b); color:#facc15;"><i class="fas fa-undo-alt"></i> Reset Round & Winners</button>
+      </div>
+      
+      <!-- Winners log area -->
+      <div class="mt-6 w-full">
+        <h3 class="text-md font-bold text-yellow-400 mb-2"><i class="fas fa-list-ol"></i> Recent Draws</h3>
+        <div id="winnersLog" class="max-h-48 overflow-y-auto space-y-2 pr-1"></div>
+      </div>
+      
+      <!-- Change Password -->
+      <div class="mt-6 w-full">
+        <h3 class="text-md font-bold text-indigo-300 mb-2"><i class="fas fa-lock"></i> Security</h3>
+        <input type="password" id="adminNewPass" class="w-full p-3 rounded-2xl bg-gray-800 border border-yellow-500/40 text-white mb-2" placeholder="New admin password">
+        <button id="updateAdminPassBtn" class="w-full py-2 rounded-2xl bg-blue-700 hover:bg-blue-600 text-white font-bold"><i class="fas fa-key"></i> Update Password</button>
+      </div>
+      <div id="actionMessage" class="result-area text-sm"></div>
+    </div>
   </div>
 
-  <!-- Main Content -->
-  <div class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-    <!-- Left: Wheel, Actions & Results -->
-    <div class="space-y-6 text-center">
-      <div class="wheel-container">
-        <div class="arrow"></div>
-        <div id="wheel" class="wheel"></div>
-      </div>
-
-      <!-- Round & Spins Status -->
-      <div id="gameStatus" class="mt-4 text-lg font-bold text-indigo-300">
-        <p>Current Round: <span id="roundDisplay">1</span></p>
-        <p>Spins Left: <span id="spinsDisplay">3</span></p>
-      </div>
-
-      <div class="space-y-4 mt-6">
-        <button id="drawBtn" class="w-full px-4 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold text-lg">
-          🎲 Spin & Draw Winner
-        </button>
-        <button id="resetBtn" class="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold text-lg">
-          🔄 Reset Game
-        </button>
-      </div>
-
-      <div id="drawArea" class="mt-6 space-y-4">
-        <div id="results" class="text-xl font-bold text-indigo-300 space-y-2"></div>
-      </div>
-
-      <div class="mt-8">
-        <h2 class="text-xl font-bold text-indigo-300 mb-2">🔒 Change Password</h2>
-        <input type="password" id="newAdminPass" placeholder="New Password"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <button id="changePassBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">
-          Update Password
-        </button>
-      </div>
-
-      <div id="result" class="mt-6 text-lg text-green-400 whitespace-pre-line"></div>
+  <!-- RIGHT: Participants management -->
+  <div class="glass-admin" style="padding: 1.8rem;">
+    <div class="flex items-center gap-3 mb-4">
+      <i class="fas fa-users text-2xl text-yellow-400"></i>
+      <h2 class="text-xl font-bold">Registered Contestants</h2>
     </div>
-
-    <!-- Right: Participants -->
-    <div>
-      <h2 class="text-2xl font-bold text-indigo-300 mb-4">👥 Participants</h2>
-      <table class="w-full border-collapse border border-gray-700">
+    <div class="participant-table-container">
+      <table class="admin-table">
         <thead>
-          <tr class="bg-gray-800">
-            <th class="border border-gray-700 px-4 py-2">Name</th>
-            <th class="border border-gray-700 px-4 py-2">Phone</th>
-            <th class="border border-gray-700 px-4 py-2">Numbers</th>
-            <th class="border border-gray-700 px-4 py-2">Actions</th>
-          </tr>
+          <tr><th>Name</th><th>Phone</th><th>Lucky Numbers</th><th>Action</th></tr>
         </thead>
-        <tbody id="participantsTable"></tbody>
+        <tbody id="participantsTableBody">
+          <tr><td colspan="4" class="text-center">Loading participants...</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
+</div>
 
-  <div class="footer text-center py-4 bg-indigo-700 text-white">Powered by Bohara Lucky Draw • Admin Control Panel</div>
+<footer>
+  <i class="fas fa-gem"></i> Bohara Lucky Draw — Absolute Authority | Real-time Draw Engine
+</footer>
 
-  <audio id="dingSound" src="/static/ding.mp3" preload="auto"></audio>
+<audio id="winChime" preload="auto">
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
+</audio>
 
-  <script>
-    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+<script>
+  const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+  
+  // DOM elements
+  const wheelEl = document.getElementById("wheelCanvas");
+  const roundSpan = document.getElementById("roundDisplay");
+  const spinsSpan = document.getElementById("spinsDisplay");
+  const drawBtn = document.getElementById("drawSpinBtn");
+  const resetBtn = document.getElementById("resetRoundBtn");
+  const winnersLogDiv = document.getElementById("winnersLog");
+  const actionMsg = document.getElementById("actionMessage");
+  const participantsBody = document.getElementById("participantsTableBody");
+  const adminPassInput = document.getElementById("adminNewPass");
+  const updatePassBtn = document.getElementById("updateAdminPassBtn");
 
-    // Add numbers around the wheel
-    function renderWheelNumbers() {
-      const wheel = document.getElementById("wheel");
-      wheel.innerHTML = "";
-      const segments = 6; // match your gradient segments
-      for (let i = 0; i < segments; i++) {
-        const num = i + 1;
-        const div = document.createElement("div");
-        div.className = "wheel-number";
-        div.style.transform = `rotate(${(360/segments)*i}deg) translate(0, -120px)`;
-        div.innerText = num;
-        wheel.appendChild(div);
-      }
+  let currentRotation = 0;
+  let spinning = false;
+  
+  // Helper: play chime
+  function playWinSound() {
+    const audio = document.getElementById("winChime");
+    if (audio) {
+      audio.currentTime = 0;
+      audio.play().catch(e => console.log("audio blocked"));
+    } else {
+      // fallback beep
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        gain.gain.value = 0.2;
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.6);
+        osc.stop(ctx.currentTime + 0.6);
+        ctx.resume();
+      } catch(e) {}
     }
-    renderWheelNumbers();
+  }
 
-    function launchConfetti() {
-      for (let i = 0; i < 100; i++) {
-        const confetti = document.createElement("div");
-        confetti.className = "confetti";
-        confetti.style.left = Math.random() * window.innerWidth + "px";
-        confetti.style.backgroundColor = ["#facc15","#22c55e","#3b82f6","#ef4444","#ec4899"][Math.floor(Math.random()*5)];
-        confetti.style.animationDuration = (2 + Math.random() * 3) + "s";
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 5000);
-      }
+  // premium confetti
+  function burstConfetti() {
+    const colors = ['#facc15', '#ffd966', '#22c55e', '#3b82f6', '#ec4899', '#f97316'];
+    const count = Math.min(130, window.innerWidth / 5);
+    for (let i = 0; i < count; i++) {
+      const conf = document.createElement('div');
+      conf.classList.add('confetti-particle');
+      conf.style.left = Math.random() * window.innerWidth + 'px';
+      conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      conf.style.width = (5 + Math.random() * 12) + 'px';
+      conf.style.height = (8 + Math.random() * 14) + 'px';
+      conf.style.borderRadius = Math.random() > 0.6 ? '50%' : '2px';
+      conf.style.animationDuration = 1.5 + Math.random() * 3 + 's';
+      document.body.appendChild(conf);
+      setTimeout(() => conf.remove(), 5000);
     }
+  }
 
-    function playDing() {
-      const sound = document.getElementById("dingSound");
-      sound.currentTime = 0;
-      sound.play();
+  // render wheel numbers (6 segments)
+  function renderWheelNumbers() {
+    if (!wheelEl) return;
+    const existing = wheelEl.querySelectorAll('.wheel-segment-text');
+    existing.forEach(el => el.remove());
+    const segments = 6;
+    for (let i = 0; i < segments; i++) {
+      const numberDiv = document.createElement('div');
+      numberDiv.className = 'wheel-segment-text';
+      const angle = (360 / segments) * i;
+      numberDiv.style.transform = `rotate(${angle}deg) translate(0, -100px)`;
+      numberDiv.innerText = (i + 1).toString();
+      wheelEl.appendChild(numberDiv);
     }
+  }
+  renderWheelNumbers();
 
-    async function logout() {
-      const response = await fetch(`${BACKEND_URL}/logout`, { method: "GET", credentials:"include" });
-      const data = await response.json();
-      if (response.ok) {
-        alert(data.message);
-        window.location.href = "login.html";
-      } else {
-        alert("Logout failed: " + (data.error || "Unknown error"));
-      }
+  // display winners log in UI (local)
+  function addWinnerToLog(message) {
+    const card = document.createElement('div');
+    card.className = 'winner-card';
+    card.innerHTML = `<i class="fas fa-crown text-yellow-400 mr-2"></i> ${message}`;
+    winnersLogDiv.prepend(card);
+    if (winnersLogDiv.children.length > 12) {
+      winnersLogDiv.removeChild(winnersLogDiv.lastChild);
     }
+  }
 
-    document.getElementById("drawBtn").onclick = async () => {
-      const wheel = document.getElementById("wheel");
-      const spinDegrees = 720 + Math.floor(Math.random() * 360);
-      wheel.style.transform = `rotate(${spinDegrees}deg)`;
-
-      const response = await fetch(`${BACKEND_URL}/drawWinner`, { method: "POST", credentials:"include" });
-      const data = await response.json();
-
-      setTimeout(() => {
-        if (data.message) {
-          document.getElementById("results").innerHTML += `<div class="winner-card">🎉 ${data.message}</div>`;
-        }
-        if (data.messages) {
-          document.getElementById("results").innerHTML += data.messages.map(m => `<div class="winner-card">🎉 ${m}</div>`).join("");
-        }
-        document.getElementById("roundDisplay").textContent = data.currentRound;
-        document.getElementById("spinsDisplay").textContent = data.spinsLeft;
-        playDing();
-        launchConfetti();
-      }, 4000);
-    };
-
-        document.getElementById("resetBtn").onclick = async () => {
-      const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST", credentials:"include" });
-      const data = await response.json();
-      document.getElementById("results").innerHTML = "";
-      document.getElementById("result").innerText = data.message || data.error;
-      document.getElementById("roundDisplay").textContent = data.currentRound;
-      document.getElementById("spinsDisplay").textContent = data.spinsLeft;
-    };
-
-    document.getElementById("changePassBtn").onclick = async () => {
-      const newPass = document.getElementById("newAdminPass").value;
-      if (!newPass) {
-        document.getElementById("result").innerText = "⚠️ Please enter a new password.";
+  // load participants table
+  async function loadParticipants() {
+    try {
+      const resp = await fetch(`${BACKEND_URL}/participants`, { credentials: "include" });
+      if (!resp.ok) throw new Error("Unauthorized or fetch fail");
+      const data = await resp.json();
+      const participants = data.requests || [];
+      participantsBody.innerHTML = "";
+      if (participants.length === 0) {
+        participantsBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400">✨ No participants yet ✨</td></tr>';
         return;
       }
-      const response = await fetch(`${BACKEND_URL}/changePassword`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials:"include",
-        body: JSON.stringify({ target:"admin", newPassword:newPass })
+      participants.forEach(p => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="py-2 px-3">${escapeHtml(p.name || 'Anonymous')}</td>
+          <td class="py-2 px-3">${escapeHtml(p.phone || '-')}</td>
+          <td class="py-2 px-3">${(p.numbers || []).join(', ')}</td>
+          <td class="py-2 px-3"><button class="remove-participant" data-phone="${escapeAttr(p.phone)}"><i class="fas fa-trash-alt"></i> Remove</button></td>
+        `;
+        participantsBody.appendChild(row);
       });
-      const data = await response.json();
-      document.getElementById("result").innerText = data.message || data.error;
-    };
+      // attach remove events
+      document.querySelectorAll('.remove-participant').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const phone = btn.getAttribute('data-phone');
+          if (phone && confirm(`Remove participant with phone ${phone}?`)) {
+            await removeParticipantByPhone(phone);
+          }
+        });
+      });
+    } catch (err) {
+      console.error(err);
+      participantsBody.innerHTML = '<tr><td colspan="4" class="text-center text-red-400">Failed to load</td></tr>';
+    }
+  }
 
-    async function removeParticipant(phone) {
-      const response = await fetch(`${BACKEND_URL}/removeParticipant`, {
+  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+  function escapeAttr(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  async function removeParticipantByPhone(phone) {
+    try {
+      const resp = await fetch(`${BACKEND_URL}/removeParticipant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials:"include",
+        credentials: "include",
         body: JSON.stringify({ phone })
       });
-      const data = await response.json();
-      alert(data.message || data.error);
+      const data = await resp.json();
+      actionMsg.innerHTML = `<i class="fas fa-info-circle"></i> ${data.message || data.error || "Removed"}`;
       loadParticipants();
+    } catch(err) {
+      actionMsg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error removing participant`;
     }
+  }
 
-    async function loadParticipants() {
-      const response = await fetch(`${BACKEND_URL}/participants`, { credentials: "include" });
-      const data = await response.json();
-      const table = document.getElementById("participantsTable");
-      table.innerHTML = "";
-      data.requests.forEach(r => {
-        const row = `<tr>
-          <td class="border border-gray-700 px-4 py-2">${r.name}</td>
-          <td class="border border-gray-700 px-4 py-2">${r.phone}</td>
-          <td class="border border-gray-700 px-4 py-2">${r.numbers.join(", ")}</td>
-          <td class="border border-gray-700 px-4 py-2 text-center">
-            <button onclick="removeParticipant('${r.phone}')"
-              class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-white font-bold">
-              Remove
-            </button>
-          </td>
-        </tr>`;
-        table.innerHTML += row;
+  // fetch current game state (round, spins left)
+  async function fetchGameStatus() {
+    try {
+      const resp = await fetch(`${BACKEND_URL}/gameStatus`, { credentials: "include" });
+      if (resp.ok) {
+        const data = await resp.json();
+        roundSpan.innerText = data.currentRound || 1;
+        spinsSpan.innerText = data.spinsLeft !== undefined ? data.spinsLeft : 3;
+      }
+    } catch(e) { console.warn(e); }
+  }
+
+  // DRAW WINNER LOGIC + wheel animation
+  async function performDraw() {
+    if (spinning) {
+      actionMsg.innerHTML = "⏳ Spin in progress, please wait...";
+      return;
+    }
+    spinning = true;
+    drawBtn.disabled = true;
+    // random spin degrees (at least 3 full spins)
+    const extra = 720 + Math.floor(Math.random() * 720);
+    const newRotation = currentRotation + extra;
+    wheelEl.style.transform = `rotate(${newRotation}deg)`;
+    currentRotation = newRotation % 360;
+    
+    // call backend draw
+    try {
+      const resp = await fetch(`${BACKEND_URL}/drawWinner`, {
+        method: "POST",
+        credentials: "include"
       });
+      const data = await resp.json();
+      
+      // after animation completes (4 sec)
+      setTimeout(async () => {
+        if (data.message) {
+          addWinnerToLog(data.message);
+          actionMsg.innerHTML = `<i class="fas fa-trophy"></i> ${data.message}`;
+          playWinSound();
+          burstConfetti();
+        } else if (data.messages && data.messages.length) {
+          data.messages.forEach(msg => addWinnerToLog(msg));
+          actionMsg.innerHTML = `<i class="fas fa-champagne-glasses"></i> ${data.messages.join(' • ')}`;
+          playWinSound();
+          burstConfetti();
+        } else if (data.error) {
+          actionMsg.innerHTML = `<i class="fas fa-ban"></i> ${data.error}`;
+        }
+        // update round & spins
+        if (data.currentRound !== undefined) roundSpan.innerText = data.currentRound;
+        if (data.spinsLeft !== undefined) spinsSpan.innerText = data.spinsLeft;
+        // refresh participants (maybe numbers become taken, but not needed, but winners log updated)
+        await loadParticipants();
+        spinning = false;
+        drawBtn.disabled = false;
+      }, 4000);
+    } catch (err) {
+      console.error(err);
+      actionMsg.innerHTML = "❌ Network error during draw";
+      spinning = false;
+      drawBtn.disabled = false;
+      wheelEl.style.transform = `rotate(${currentRotation}deg)`;
     }
+  }
 
-    // Initial load
-    loadParticipants();
-  </script>
+  // Reset system (winners, rounds)
+  async function resetSystem() {
+    if (!confirm("⚠️ Reset all winners and rounds? This will clear draw history and reset round to 1 with full spins.")) return;
+    try {
+      const resp = await fetch(`${BACKEND_URL}/reset`, {
+        method: "POST",
+        credentials: "include"
+      });
+      const data = await resp.json();
+      actionMsg.innerHTML = `<i class="fas fa-sync"></i> ${data.message || "System reset"}`;
+      if (data.currentRound) roundSpan.innerText = data.currentRound;
+      if (data.spinsLeft) spinsSpan.innerText = data.spinsLeft;
+      // clear winners log UI
+      winnersLogDiv.innerHTML = '<div class="winner-card text-gray-400">✨ Reset — new round begins</div>';
+      await loadParticipants();
+      // also fetch game status
+      await fetchGameStatus();
+    } catch(err) {
+      actionMsg.innerHTML = "Reset failed: backend error";
+    }
+  }
+
+  // Change admin password
+  async function changeAdminPassword() {
+    const newPass = adminPassInput.value.trim();
+    if (!newPass) {
+      actionMsg.innerHTML = "⚠️ Enter a new password";
+      return;
+    }
+    try {
+      const resp = await fetch(`${BACKEND_URL}/changePassword`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ target: "admin", newPassword: newPass })
+      });
+      const data = await resp.json();
+      if (resp.ok) {
+        actionMsg.innerHTML = "✅ Admin password updated successfully!";
+        adminPassInput.value = "";
+      } else {
+        actionMsg.innerHTML = `❌ ${data.error || "Update failed"}`;
+      }
+    } catch(e) {
+      actionMsg.innerHTML = "Network error updating password";
+    }
+  }
+
+  // Logout function
+  async function logoutAdmin() {
+    try {
+      const resp = await fetch(`${BACKEND_URL}/logout`, { method: "GET", credentials: "include" });
+      const data = await resp.json();
+      if (resp.ok) {
+        alert(data.message || "Logged out");
+        window.location.href = "login.html";
+      } else {
+        alert("Logout error");
+      }
+    } catch(e) {
+      alert("Network error during logout");
+    }
+  }
+
+  // Auto-refresh participants & game status every 10 secs
+  let refreshTimer;
+  function startAutoRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(() => {
+      loadParticipants();
+      fetchGameStatus();
+    }, 10000);
+  }
+
+  // Event listeners
+  drawBtn.addEventListener('click', performDraw);
+  resetBtn.addEventListener('click', resetSystem);
+  updatePassBtn.addEventListener('click', changeAdminPassword);
+  document.getElementById("logoutNavBtn")?.addEventListener('click', logoutAdmin);
+  
+  // initial load
+  (async () => {
+    await loadParticipants();
+    await fetchGameStatus();
+    // get winners history from backend if available (optional, but we rely on draw logs)
+    // initial winners log placeholder
+    winnersLogDiv.innerHTML = '<div class="winner-card"><i class="fas fa-hourglass-half"></i> Awaiting first spin...</div>';
+    startAutoRefresh();
+  })();
+</script>
 </body>
 </html>

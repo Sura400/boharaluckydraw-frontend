@@ -2,219 +2,650 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Super Admin Dashboard - Bohara Lucky Draw</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="static/style.css">
-</head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+  <title>Bohara Nexus | Super Admin Command Center</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  <!-- Top Bar -->
-  <div class="flex justify-between items-center bg-indigo-700 p-4">
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-yellow-400">👑 Super Admin Dashboard</h1>
-    <nav class="space-x-4">
-      <a href="index.html" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold">🏠 User Portal</a>
-      <a href="admin.html" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">🛠 Admin Panel</a>
-      <button onclick="logout()" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">🚪 Logout</button>
-    </nav>
-  </div>
+    body {
+      font-family: 'Inter', 'Space Grotesk', sans-serif;
+      background: radial-gradient(ellipse at 20% 30%, #0a0c1a, #010101);
+      color: #edf2ff;
+      min-height: 100vh;
+    }
 
-  <!-- Main Content -->
-  <div class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-    <!-- Left Column -->
-    <div class="space-y-8">
-      <!-- Secret Winner Override -->
-      <div>
-        <h2 class="text-xl font-bold text-yellow-400 mb-2">🕵️ Secret Winner Override</h2>
-        <p class="text-sm text-gray-300 mb-2">Set secret winners for each slot (optional). Leave blank if no override.</p>
-        
-        <input type="number" id="firstSlot" placeholder="First slot number"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <input type="number" id="secondSlot" placeholder="Second slot number"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <input type="number" id="thirdSlot" placeholder="Third slot number"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
+    /* animated gradient background */
+    .admin-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: repeating-linear-gradient(45deg, rgba(79, 70, 229, 0.03) 0px, rgba(79, 70, 229, 0.03) 2px, transparent 2px, transparent 8px);
+    }
 
-        <button id="secretBtn" class="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-400 rounded-lg text-black font-bold">
-          Set Secret Winners
-        </button>
-      </div>
+    /* Glassmorphism premium */
+    .glass-panel {
+      background: rgba(12, 18, 34, 0.65);
+      backdrop-filter: blur(16px);
+      border-radius: 2rem;
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      box-shadow: 0 25px 40px -15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: all 0.2s;
+    }
 
-      <!-- Change Super Admin Password -->
-      <div>
-        <h2 class="text-xl font-bold text-indigo-300 mb-2">🔒 Change Super Admin Password</h2>
-        <input type="password" id="newSuperPass" placeholder="New Password"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <button id="changeSuperPassBtn" class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold">
-          Update Password
-        </button>
-      </div>
+    .glass-panel:hover {
+      border-color: rgba(250, 204, 21, 0.6);
+      box-shadow: 0 30px 50px -18px black;
+    }
 
-      <!-- Reset System -->
-      <div>
-        <h2 class="text-xl font-bold text-red-400 mb-2">🔄 Reset System</h2>
-        <button id="resetBtn" class="w-full px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-white font-bold">
-          Reset All Participants & Winners
-        </button>
-      </div>
-    </div>
+    /* header premium */
+    .supreme-header {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(250, 204, 21, 0.4);
+      padding: 1rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
 
-    <!-- Right Column -->
-    <div class="space-y-8">
-      <!-- Create Admin -->
-      <div>
-        <h2 class="text-xl font-bold text-indigo-300 mb-2">➕ Create New Admin</h2>
-        <input type="text" id="newAdminUser" placeholder="Username"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <input type="text" id="newAdminPass" placeholder="Password"
-               class="mb-2 w-full p-2 rounded bg-gray-700 text-white">
-        <button id="createAdminBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold">
-          ➕ Create Admin
-        </button>
-      </div>
+    .logo-supreme {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-      <!-- Participants Management -->
-      <div>
-        <h2 class="text-2xl font-bold text-indigo-300 mb-4">👥 Participants</h2>
-        <table class="w-full border-collapse border border-gray-700">
-          <thead>
-            <tr class="bg-gray-800">
-              <th class="border border-gray-700 px-4 py-2">Name</th>
-              <th class="border border-gray-700 px-4 py-2">Phone</th>
-              <th class="border border-gray-700 px-4 py-2">Numbers</th>
-              <th class="border border-gray-700 px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="participantsTable"></tbody>
-        </table>
-      </div>
+    .logo-supreme i {
+      font-size: 2rem;
+      color: #facc15;
+      filter: drop-shadow(0 0 6px #facc15);
+    }
 
-      <!-- Results -->
-      <div id="result" class="mt-6 text-lg text-green-400 whitespace-pre-line"></div>
-    </div>
-  </div>
+    .logo-supreme h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FFE6A3, #FACC15);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
 
-  <!-- Footer -->
-  <div class="footer text-center py-4 bg-indigo-700 text-white">Powered by Bohara Lucky Draw • Super Admin Control</div>
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-  <!-- Script -->
-  <script>
-    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+    .nav-btn {
+      padding: 0.6rem 1.3rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(250,204,21,0.3);
+      color: #facc15;
+    }
 
-    async function logout() {
-      const response = await fetch(`${BACKEND_URL}/logout`, { method: "GET", credentials:"include" });
-      const data = await response.json();
-      if (response.ok) {
-        alert(data.message);
-        window.location.href = "login.html";
-      } else {
-        alert("Logout failed: " + (data.error || "Unknown error"));
+    .nav-btn:hover {
+      background: #facc15;
+      color: #0a0c1a;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(250,204,21,0.3);
+    }
+
+    .logout-btn {
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+    .logout-btn:hover {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+
+    /* dashboard layout */
+    .dashboard-container {
+      max-width: 1600px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+
+    @media (max-width: 1000px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+        gap: 1.8rem;
       }
     }
 
-    // Secret Winner Override
-    document.getElementById("secretBtn").onclick = async () => {
-      const overrides = [
-        { slot: "first", number: parseInt(document.getElementById("firstSlot").value) },
-        { slot: "second", number: parseInt(document.getElementById("secondSlot").value) },
-        { slot: "third", number: parseInt(document.getElementById("thirdSlot").value) }
-      ];
+    .card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid #facc15;
+      padding-left: 1rem;
+      margin-bottom: 1.2rem;
+    }
 
-      document.getElementById("result").innerText = ""; // clear previous
-      for (const o of overrides) {
-        if (!isNaN(o.number)) {
-          const response = await fetch(`${BACKEND_URL}/setSecretWinner`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(o)
-          });
-          const data = await response.json();
-          document.getElementById("result").innerText += (data.message || data.error) + "\n";
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    .premium-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      border-radius: 1.5rem;
+      padding: 0.8rem 1.2rem;
+      color: white;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .premium-input:focus {
+      outline: none;
+      border-color: #facc15;
+      box-shadow: 0 0 0 3px rgba(250,204,21,0.2);
+    }
+
+    .btn-gold {
+      background: linear-gradient(95deg, #facc15, #eab308);
+      border: none;
+      border-radius: 2rem;
+      padding: 0.8rem 1rem;
+      font-weight: 800;
+      width: 100%;
+      color: #0f172a;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -8px rgba(250,204,21,0.5);
+      filter: brightness(1.02);
+    }
+
+    .btn-danger {
+      background: linear-gradient(95deg, #b91c1c, #7f1d1d);
+      color: white;
+    }
+    .btn-danger:hover {
+      background: linear-gradient(95deg, #dc2626, #991b1b);
+      box-shadow: 0 8px 18px rgba(220,38,38,0.3);
+    }
+
+    .btn-primary {
+      background: linear-gradient(95deg, #3b82f6, #1d4ed8);
+      color: white;
+    }
+
+    /* participants table premium */
+    .participants-wrapper {
+      max-height: 460px;
+      overflow-y: auto;
+      border-radius: 1.5rem;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .admin-table th {
+      text-align: left;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.6);
+      color: #facc15;
+      position: sticky;
+      top: 0;
+      font-weight: 600;
+    }
+
+    .admin-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      vertical-align: middle;
+    }
+
+    .remove-btn {
+      background: #dc2626;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.3rem 1rem;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .remove-btn:hover {
+      background: #b91c1c;
+      transform: scale(1.02);
+    }
+
+    .result-area {
+      margin-top: 1rem;
+      background: rgba(0,0,0,0.5);
+      border-radius: 1.5rem;
+      padding: 1rem;
+      font-size: 0.85rem;
+      border-left: 3px solid #22c55e;
+      word-break: break-word;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
+      margin-top: 2rem;
+      border-top: 1px solid rgba(250,204,21,0.2);
+      font-size: 0.8rem;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #facc15;
+      border-radius: 10px;
+    }
+
+    .badge-super {
+      font-size: 0.7rem;
+      background: rgba(250,204,21,0.2);
+      border-radius: 20px;
+      padding: 0.2rem 0.6rem;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-bg"></div>
+
+<header class="supreme-header">
+  <div class="logo-supreme">
+    <i class="fas fa-crown"></i>
+    <h1>BOHARA NEXUS <span style="font-size:0.8rem; background: #facc15; color:#0a0c1a; border-radius: 40px; padding: 2px 10px;">SUPER ADMIN</span></h1>
+  </div>
+  <div class="nav-buttons">
+    <a href="index.html" class="nav-btn"><i class="fas fa-users"></i> User Portal</a>
+    <a href="admin.html" class="nav-btn"><i class="fas fa-tachometer-alt"></i> Admin Panel</a>
+    <button id="logoutBtn" class="nav-btn logout-btn"><i class="fas fa-sign-out-alt"></i> Exit</button>
+  </div>
+</header>
+
+<div class="dashboard-container">
+  <!-- LEFT COLUMN: Overrides & Security -->
+  <div class="glass-panel" style="padding: 1.5rem;">
+    <div class="card-title">
+      <i class="fas fa-skull-crossbones" style="color:#facc15;"></i> 
+      <span>Secret Override & Control</span>
+    </div>
+    
+    <!-- Secret Winner Override -->
+    <div class="input-group">
+      <label style="font-size:0.8rem; opacity:0.8;"><i class="fas fa-mask"></i> Secret Winner Override (slot numbers)</label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
+        <input type="number" id="firstSlot" placeholder="1st slot" class="premium-input" style="text-align:center;">
+        <input type="number" id="secondSlot" placeholder="2nd slot" class="premium-input" style="text-align:center;">
+        <input type="number" id="thirdSlot" placeholder="3rd slot" class="premium-input" style="text-align:center;">
+      </div>
+      <button id="secretBtn" class="btn-gold" style="margin-top: 12px;"><i class="fas fa-dice-d6"></i> Apply Secret Winners</button>
+    </div>
+
+    <!-- Change Super Admin Password -->
+    <div class="input-group" style="margin-top: 1.5rem;">
+      <label><i class="fas fa-key"></i> Change Master Password</label>
+      <input type="password" id="newSuperPass" class="premium-input" placeholder="New super admin password">
+      <button id="changeSuperPassBtn" class="btn-gold btn-primary" style="margin-top: 8px;"><i class="fas fa-shield-alt"></i> Update Credentials</button>
+    </div>
+
+    <!-- Reset System -->
+    <div class="input-group" style="margin-top: 1.5rem;">
+      <button id="resetBtn" class="btn-gold btn-danger"><i class="fas fa-radiation"></i> 🚨 RESET ENTIRE SYSTEM</button>
+      <p class="text-xs text-gray-400 mt-2"><i class="fas fa-exclamation-triangle"></i> This will erase all participants, winners & rounds.</p>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Admin Creation & Participants -->
+  <div class="glass-panel" style="padding: 1.5rem;">
+    <div class="card-title">
+      <i class="fas fa-user-shield"></i>
+      <span>Admin & Participant Control</span>
+    </div>
+    
+    <!-- Create Admin -->
+    <div class="input-group">
+      <label><i class="fas fa-plus-circle"></i> Create new admin account</label>
+      <input type="text" id="newAdminUser" class="premium-input" placeholder="Admin username">
+      <input type="password" id="newAdminPass" class="premium-input" style="margin-top: 8px;" placeholder="Admin password">
+      <button id="createAdminBtn" class="btn-gold" style="margin-top: 8px;"><i class="fas fa-user-plus"></i> Create Admin</button>
+    </div>
+
+    <!-- Participants table with management -->
+    <div style="margin-top: 1.8rem;">
+      <div class="card-title" style="margin-bottom: 0.5rem;">
+        <i class="fas fa-list-ul"></i> Registered Participants
+      </div>
+      <div class="participants-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Name</th><th>Phone</th><th>Numbers</th><th style="width:90px;">Action</th></tr>
+          </thead>
+          <tbody id="participantsTableBody">
+            <tr><td colspan="4" style="text-align:center;">Loading warriors...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Global result message -->
+    <div id="globalResult" class="result-area">
+      <i class="fas fa-terminal"></i> Command center ready.
+    </div>
+  </div>
+</div>
+
+<footer>
+  <i class="fas fa-shield-haltered"></i> Bohara Lucky Draw — Absolute Authority | Encrypted Actions
+</footer>
+
+<script>
+  // ======================== BACKEND CONFIG ========================
+  const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+
+  // Helper: display message in result area
+  function setResultMessage(msg, isError = false) {
+    const resultDiv = document.getElementById("globalResult");
+    if (resultDiv) {
+      resultDiv.innerHTML = `<i class="fas ${isError ? 'fa-circle-exclamation' : 'fa-circle-check'}"></i> ${msg}`;
+      resultDiv.style.borderLeftColor = isError ? "#ef4444" : "#22c55e";
+      setTimeout(() => {
+        if (document.getElementById("globalResult")?.innerHTML === resultDiv.innerHTML) {
+          // keep but don't auto-clear aggressively, leave for 5s if needed
         }
-      }
-    };
+      }, 4000);
+    }
+  }
 
-    // Change Super Admin Password
-    document.getElementById("changeSuperPassBtn").onclick = async () => {
-      const newPass = document.getElementById("newSuperPass").value;
-      if (!newPass) {
-        document.getElementById("result").innerText = "⚠️ Please enter a new password.";
-        return;
+  // ======================== LOGOUT ========================
+  async function performLogout() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/logout`, { 
+        method: "GET", 
+        credentials: "include" 
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setResultMessage("✅ Logged out successfully. Redirecting...");
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 800);
+      } else {
+        setResultMessage("❌ Logout failed: " + (data.error || "unknown"), true);
       }
+    } catch (err) {
+      setResultMessage("Network error during logout", true);
+    }
+  }
+
+  // ======================== SECRET WINNER OVERRIDE ========================
+  async function setSecretWinner(slot, number) {
+    if (isNaN(number)) return null;
+    try {
+      const response = await fetch(`${BACKEND_URL}/setSecretWinner`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ slot, number: parseInt(number) })
+      });
+      const data = await response.json();
+      return data.message || data.error;
+    } catch (err) {
+      return `Error setting ${slot} winner`;
+    }
+  }
+
+  document.getElementById("secretBtn").onclick = async () => {
+    const first = document.getElementById("firstSlot").value;
+    const second = document.getElementById("secondSlot").value;
+    const third = document.getElementById("thirdSlot").value;
+    let results = [];
+    if (first && !isNaN(parseInt(first))) results.push(await setSecretWinner("first", first));
+    if (second && !isNaN(parseInt(second))) results.push(await setSecretWinner("second", second));
+    if (third && !isNaN(parseInt(third))) results.push(await setSecretWinner("third", third));
+    if (results.length === 0) {
+      setResultMessage("⚠️ No valid slot numbers provided.", true);
+    } else {
+      setResultMessage("✨ Override applied: " + results.join(" | "));
+      // Refresh participant & winners after secret override? Not mandatory but good
+      await loadParticipants();
+    }
+    // clear fields optionally
+    document.getElementById("firstSlot").value = "";
+    document.getElementById("secondSlot").value = "";
+    document.getElementById("thirdSlot").value = "";
+  };
+
+  // ======================== CHANGE SUPER ADMIN PASSWORD ========================
+  document.getElementById("changeSuperPassBtn").onclick = async () => {
+    const newPass = document.getElementById("newSuperPass").value.trim();
+    if (!newPass) {
+      setResultMessage("⚠️ Please enter a new password for super admin.", true);
+      return;
+    }
+    try {
       const response = await fetch(`${BACKEND_URL}/changePassword`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials:"include",
+        credentials: "include",
         body: JSON.stringify({ target: "superadmin", newPassword: newPass })
       });
       const data = await response.json();
-      document.getElementById("result").innerText = data.message || data.error;
-    };
-
-    // Reset System
-    document.getElementById("resetBtn").onclick = async () => {
-      const response = await fetch(`${BACKEND_URL}/reset`, { method: "POST", credentials: "include" });
-      const data = await response.json();
-      document.getElementById("result").innerText = data.message || data.error;
-    };
-
-    // Create Admin
-    document.getElementById("createAdminBtn").onclick = async () => {
-      const payload = {
-        username: document.getElementById("newAdminUser").value,
-        password: document.getElementById("newAdminPass").value
-      };
-      if (!payload.username || !payload.password) {
-        document.getElementById("result").innerText = "⚠️ Please enter username and password.";
-        return;
+      if (response.ok) {
+        setResultMessage("🔐 Super admin password updated successfully!");
+        document.getElementById("newSuperPass").value = "";
+      } else {
+        setResultMessage("❌ " + (data.error || "Failed to update"), true);
       }
+    } catch (err) {
+      setResultMessage("Network error updating password", true);
+    }
+  };
+
+  // ======================== RESET SYSTEM ========================
+  document.getElementById("resetBtn").onclick = async () => {
+    if (!confirm("⚠️ DANGER ZONE: This will delete ALL participants, winners, and rounds. Are you ABSOLUTELY sure?")) return;
+    try {
+      const response = await fetch(`${BACKEND_URL}/reset`, { 
+        method: "POST", 
+        credentials: "include" 
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setResultMessage("💀 System has been fully reset. All data wiped.");
+        await loadParticipants();
+      } else {
+        setResultMessage("Reset failed: " + (data.error || "unknown"), true);
+      }
+    } catch (err) {
+      setResultMessage("Cannot reach backend for reset", true);
+    }
+  };
+
+  // ======================== CREATE ADMIN ========================
+  document.getElementById("createAdminBtn").onclick = async () => {
+    const username = document.getElementById("newAdminUser").value.trim();
+    const password = document.getElementById("newAdminPass").value.trim();
+    if (!username || !password) {
+      setResultMessage("⚠️ Provide both username and password for new admin.", true);
+      return;
+    }
+    try {
       const response = await fetch(`${BACKEND_URL}/superadmin/create_admin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ username, password })
       });
       const data = await response.json();
-      document.getElementById("result").innerText = data.message || data.error;
-    };
+      if (response.ok) {
+        setResultMessage(`✅ Admin "${username}" created successfully.`);
+        document.getElementById("newAdminUser").value = "";
+        document.getElementById("newAdminPass").value = "";
+      } else {
+        setResultMessage(`❌ ${data.error || data.message || "Creation failed"}`, true);
+      }
+    } catch (err) {
+      setResultMessage("Network error: cannot create admin", true);
+    }
+  };
 
-    // Remove Participant
-    async function removeParticipant(phone) {
+  // ======================== REMOVE PARTICIPANT ========================
+  async function removeParticipant(phone, name) {
+    if (!confirm(`Remove participant "${name}" (${phone})? This action is irreversible.`)) return;
+    try {
       const response = await fetch(`${BACKEND_URL}/removeParticipant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials:"include",
-                body: JSON.stringify({ phone })
+        credentials: "include",
+        body: JSON.stringify({ phone })
       });
       const data = await response.json();
-      alert(data.message || data.error);
-      loadParticipants();
+      if (response.ok) {
+        setResultMessage(`🗑️ Removed ${name} from participants.`);
+        await loadParticipants();  // refresh table
+      } else {
+        setResultMessage(`Error: ${data.error || "Could not remove"}`, true);
+      }
+    } catch (err) {
+      setResultMessage("Network error while removing participant", true);
     }
+  }
 
-    async function loadParticipants() {
-      const response = await fetch(`${BACKEND_URL}/participants`, { credentials: "include" });
-      const data = await response.json();
-      const table = document.getElementById("participantsTable");
-      table.innerHTML = "";
-      data.requests.forEach(r => {
-        const row = `<tr>
-          <td class="border border-gray-700 px-4 py-2">${r.name}</td>
-          <td class="border border-gray-700 px-4 py-2">${r.phone}</td>
-          <td class="border border-gray-700 px-4 py-2">${r.numbers.join(", ")}</td>
-          <td class="border border-gray-700 px-4 py-2 text-center">
-            <button onclick="removeParticipant('${r.phone}')"
-              class="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-white font-bold">
-              Remove
-            </button>
-          </td>
-        </tr>`;
-        table.innerHTML += row;
+  // ======================== LOAD PARTICIPANTS & RENDER ========================
+  async function loadParticipants() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/participants`, { 
+        credentials: "include" 
       });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const data = await response.json();
+      const participants = data.requests || [];
+      const tableBody = document.getElementById("participantsTableBody");
+      if (!tableBody) return;
+      
+      if (participants.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">✨ No participants yet ✨</td></tr>';
+        return;
+      }
+      
+      tableBody.innerHTML = "";
+      participants.forEach(p => {
+        const row = document.createElement("tr");
+        const nameCell = document.createElement("td");
+        nameCell.className = "py-2 px-3 border-b border-gray-700";
+        nameCell.innerText = p.name || "Anonymous";
+        const phoneCell = document.createElement("td");
+        phoneCell.innerText = p.phone || "-";
+        const numbersCell = document.createElement("td");
+        numbersCell.innerText = (p.numbers || []).join(", ");
+        const actionCell = document.createElement("td");
+        const removeButton = document.createElement("button");
+        removeButton.className = "remove-btn";
+        removeButton.innerHTML = '<i class="fas fa-trash-alt"></i> Remove';
+        removeButton.onclick = (e) => {
+          e.preventDefault();
+          removeParticipant(p.phone, p.name);
+        };
+        actionCell.appendChild(removeButton);
+        row.appendChild(nameCell);
+        row.appendChild(phoneCell);
+        row.appendChild(numbersCell);
+        row.appendChild(actionCell);
+        tableBody.appendChild(row);
+      });
+    } catch (err) {
+      console.error(err);
+      const tableBody = document.getElementById("participantsTableBody");
+      if (tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#f87171;">⚠️ Failed to load participants</td></tr>';
+      setResultMessage("Unable to fetch participants list", true);
     }
+  }
 
-    // Initial load
-    loadParticipants();
-  </script>
+  // ======================== AUTO REFRESH PARTICIPANTS (every 12 sec) ========================
+  let refreshInterval;
+  function startAutoRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => {
+      loadParticipants().catch(e => console.warn("refresh err", e));
+    }, 12000);
+  }
+
+  // ======================== INITIAL LOAD & SESSION CHECK ========================
+  async function checkSuperAuth() {
+    // optional: we attempt a protected endpoint to see if session valid.
+    try {
+      const resp = await fetch(`${BACKEND_URL}/participants`, { credentials: "include" });
+      if (resp.status === 401 || resp.status === 403) {
+        setResultMessage("⚠️ Session expired or not authorized. Redirecting to login...", true);
+        setTimeout(() => { window.location.href = "login.html"; }, 1500);
+        return false;
+      }
+      return true;
+    } catch(e) {
+      // might be network but proceed anyway
+      return true;
+    }
+  }
+
+  // event binding
+  document.getElementById("logoutBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    performLogout();
+  });
+
+  // bootstrap app
+  (async () => {
+    await checkSuperAuth();
+    await loadParticipants();
+    startAutoRefresh();
+    setResultMessage("👑 Super Admin Console active • Full privileges loaded");
+  })();
+</script>
 </body>
 </html>

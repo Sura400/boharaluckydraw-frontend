@@ -2,279 +2,737 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bohara Lucky Draw - User Portal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
-  <link rel="icon" href="static/favicon.ico" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Bohara Lucky Draw | Premium Portal</title>
+  <meta name="description" content="Experience the ultimate lucky draw game with real-time number selection, winners showcase, and world-class branding.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: url('static/background.jpg') no-repeat center center fixed;
-      background-size: cover;
-      color: #fff;
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    body::before {
-      content: "";
+
+    body {
+      font-family: 'Inter', 'Space Grotesk', sans-serif;
+      background: radial-gradient(circle at 10% 20%, #0a0f1e, #03050b);
+      color: #eef2ff;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background particles */
+    .bg-particle {
       position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.7);
-      z-index: -1;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: 
+        radial-gradient(2px 2px at 20% 30%, #facc15, rgba(0,0,0,0)),
+        radial-gradient(3px 3px at 60% 70%, #4f46e5, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 85% 15%, #22c55e, rgba(0,0,0,0));
+      background-size: 200px 200px;
+      background-repeat: repeat;
+      opacity: 0.3;
+      animation: drift 60s linear infinite;
     }
-    .top-bar {
-      display:flex; justify-content:space-between; align-items:center;
-      background: linear-gradient(90deg, #4f46e5, #9333ea);
-      padding:10px 20px;
-      box-shadow: 0 0 20px #4f46e5;
+
+    @keyframes drift {
+      0% { background-position: 0 0; }
+      100% { background-position: 400px 400px; }
     }
-    .top-bar h1 { margin:0; font-size:1.6rem; font-family:'Orbitron', sans-serif; color:#facc15; }
-    .card {
-      background: rgba(34,34,34,0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 20px;
+
+    /* Glassmorphism + premium blur */
+    .glass-card {
+      background: rgba(15, 25, 45, 0.55);
+      backdrop-filter: blur(14px);
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 215, 0, 0.25);
+      box-shadow: 0 25px 45px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(250, 204, 21, 0.1) inset;
+      transition: all 0.3s ease;
     }
-    #number-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+
+    .glass-card:hover {
+      border-color: rgba(250, 204, 21, 0.5);
+      box-shadow: 0 30px 50px -15px rgba(0,0,0,0.6), 0 0 0 1px rgba(250, 204, 21, 0.3) inset;
+    }
+
+    /* Top Navigation */
+    .luxury-nav {
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(250, 204, 21, 0.3);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 2.2rem;
+      filter: drop-shadow(0 0 6px #facc15);
+    }
+
+    .logo-text {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FFE6A3, #FACC15, #EAB308);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .admin-btn {
+      background: linear-gradient(95deg, #1e293b, #0f172a);
+      border: 1px solid #facc15;
+      padding: 0.6rem 1.6rem;
+      border-radius: 3rem;
+      font-weight: 600;
+      color: #facc15;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
       gap: 8px;
-      padding: 10px;
-      justify-items: center;
+      text-decoration: none;
     }
-    .number-btn {
-      width: 40px; height: 40px; border-radius: 50%;
-      font-weight: bold; font-size: 14px;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s, background 0.3s, box-shadow 0.3s;
+
+    .admin-btn:hover {
+      background: #facc15;
+      color: #0f172a;
+      transform: scale(1.02);
+      box-shadow: 0 0 15px #facc15;
+    }
+
+    /* Main Grid Layout */
+    .dashboard-grid {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 1.8rem;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+
+    /* section headers */
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-left: 4px solid #facc15;
+      padding-left: 1rem;
+    }
+
+    .participant-table-container {
+      max-height: 520px;
+      overflow-y: auto;
+      border-radius: 1.5rem;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .custom-table th {
+      text-align: left;
+      padding: 1rem;
+      background: rgba(0,0,0,0.5);
+      color: #facc15;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(4px);
+    }
+
+    .custom-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.9rem;
+    }
+
+    /* Number Grid Premium */
+    .number-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+      gap: 12px;
+      padding: 1rem 0;
+    }
+
+    .num-btn {
+      aspect-ratio: 1 / 1;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      touch-action: manipulation;
+      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      background: linear-gradient(145deg, #1e2a3a, #0f172a);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #cbd5e1;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
     }
-    @media (min-width: 768px) {
-      .number-btn { width: 60px; height: 60px; font-size: 16px; }
+
+    .num-btn.available {
+      background: linear-gradient(135deg, #1f3b2c, #0f2b1f);
+      border-color: #22c55e;
+      color: #bbf7d0;
+      cursor: pointer;
     }
-    .number-btn.available {
-      background: radial-gradient(circle at 30% 30%, #22c55e, #16a34a);
-      color: white; box-shadow: 0 0 12px #22c55e;
+
+    .num-btn.taken {
+      background: linear-gradient(135deg, #4a1e2c, #2d0f1a);
+      border-color: #ef4444;
+      color: #fecaca;
+      cursor: not-allowed;
+      opacity: 0.7;
+      filter: grayscale(0.1);
     }
-    .number-btn.taken {
-      background: radial-gradient(circle at 30% 30%, #ef4444, #b91c1c);
-      color: white; box-shadow: 0 0 12px #ef4444;
+
+    .num-btn.selected {
+      background: radial-gradient(circle at 30% 30%, #facc15, #ca8a04);
+      color: #0c0a2a;
+      border-color: #ffea8a;
+      transform: scale(1.08);
+      box-shadow: 0 0 20px #facc15;
+      font-weight: 800;
     }
-    .number-btn.selected {
-      background: radial-gradient(circle at 30% 30%, #facc15, #eab308);
-      color: black; transform: scale(1.2);
-      box-shadow: 0 0 20px #facc15; animation: pulse 0.5s ease;
+
+    .num-btn.available:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 0 18px #22c55e;
     }
-    @keyframes pulse { 0%{transform:scale(1);}50%{transform:scale(1.3);}100%{transform:scale(1.2);} }
-    input[type="text"] {
-      font-size: 1rem; padding: 12px; width: 100%; margin-bottom: 12px;
-      border-radius: 8px; border: none; background: #333; color: #fff;
+
+    /* winner card style */
+    .winner-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 5px;
     }
-    .winner-card {
-      background: rgba(51,51,51,0.7); backdrop-filter: blur(8px);
-      padding:10px; border-radius:6px; font-family:'Orbitron', sans-serif;
+
+    .winner-item {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 1.2rem;
+      padding: 1rem;
+      border-left: 4px solid #facc15;
+      transition: 0.2s;
     }
-    .footer {
-      text-align:center; padding:15px;
-      background: linear-gradient(90deg, #4f46e5, #9333ea);
-      color:white; margin-top:40px; box-shadow: 0 0 20px #9333ea;
+
+    .winner-round {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #facc15;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .confetti { position:fixed; width:10px; height:10px; top:0; animation:fall linear forwards; }
-    @keyframes fall { to { transform:translateY(100vh); opacity:0; } }
-    .cta-buttons {
-      margin-top:20px; display:flex; flex-wrap:wrap; justify-content:center; gap:20px;
+
+    .winner-message {
+      font-size: 0.85rem;
+      color: #ddd;
+      word-break: break-word;
     }
-    .cta-buttons a {
-      padding:10px 20px; border-radius:10px; font-weight:bold;
-      text-decoration:none; transition:transform 0.2s, box-shadow 0.3s;
+
+    /* form inputs */
+    .premium-input {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      border-radius: 2rem;
+      padding: 0.9rem 1.2rem;
+      width: 100%;
+      color: white;
+      font-size: 1rem;
+      transition: all 0.2s;
     }
-    .cta-buttons a:hover { transform:scale(1.05); }
-    .btn-admin { background:linear-gradient(to right,#3b82f6,#1d4ed8); color:white; box-shadow:0 0 15px #3b82f6; }
+
+    .premium-input:focus {
+      outline: none;
+      border-color: #facc15;
+      box-shadow: 0 0 12px rgba(250,204,21,0.4);
+    }
+
+    .glow-button {
+      background: linear-gradient(95deg, #facc15, #eab308);
+      border: none;
+      padding: 1rem;
+      border-radius: 3rem;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #0f172a;
+      width: 100%;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 10px 20px -5px rgba(250,204,21,0.3);
+    }
+
+    .glow-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 30px -8px rgba(250,204,21,0.5);
+      filter: brightness(1.05);
+    }
+
+    .result-message {
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: 600;
+      background: rgba(0,0,0,0.5);
+      border-radius: 2rem;
+      padding: 0.7rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(250,204,21,0.2);
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+
+    /* custom scroll */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #facc15;
+      border-radius: 10px;
+    }
+
+    /* confetti animation */
+    .confetti-particle {
+      position: fixed;
+      width: 10px;
+      height: 18px;
+      background: gold;
+      top: -20px;
+      z-index: 9999;
+      pointer-events: none;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .number-grid {
+        grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+        gap: 8px;
+      }
+      .logo-text { font-size: 1.2rem; }
+      .luxury-nav { padding: 0.8rem 1rem; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <h1>🎉 Bohara Lucky Draw</h1>
-    <div class="cta-buttons">
-      <!-- Admin button now points to login.html -->
-      <a href="login.html" class="btn-admin">🛠 Admin</a>
-    </div>
-  </div>
+<div class="bg-particle"></div>
 
-  <!-- Main Layout -->
-  <div class="mt-6 w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-    <!-- Participants Table -->
-    <div class="card overflow-x-auto overflow-y-auto max-h-[400px] md:max-h-[600px]">
-      <h2 class="text-xl md:text-2xl font-bold text-indigo-300 mb-4">👥 Participants</h2>
-      <table class="w-full border-collapse border border-gray-700">
+<nav class="luxury-nav">
+  <div class="logo-area">
+    <i class="fas fa-trophy logo-icon" style="color: #facc15;"></i>
+    <span class="logo-text">BOHARA<span style="color:#fff;"> | LUCKY DRAW</span></span>
+  </div>
+  <a href="login.html" class="admin-btn" id="adminPortalLink">
+    <i class="fas fa-crown"></i> Admin Portal
+  </a>
+</nav>
+
+<div class="dashboard-grid">
+  <!-- LEFT: Participants -->
+  <div class="glass-card" style="padding: 1.2rem;">
+    <div class="section-title">
+      <i class="fas fa-users" style="color:#facc15;"></i> 
+      <span>Contestants</span>
+    </div>
+    <div class="participant-table-container">
+      <table class="custom-table">
         <thead>
-          <tr class="bg-gray-800">
-            <th class="border border-gray-700 px-4 py-2">Name</th>
-            <th class="border border-gray-700 px-4 py-2">Phone</th>
-            <th class="border border-gray-700 px-4 py-2">Numbers</th>
-          </tr>
+          <tr><th>Name</th><th>Phone</th><th>Numbers</th></tr>
         </thead>
-        <tbody id="participantsTable"></tbody>
+        <tbody id="participantsTableBody">
+          <tr><td colspan="3" style="text-align:center;">Loading champions...</td></tr>
+        </tbody>
       </table>
     </div>
+  </div>
 
-    <!-- Number Selection -->
-    <div class="flex flex-col items-center">
-      <div class="card mb-6 w-full max-w-md text-center">
-        <h2 class="text-2xl font-extrabold text-yellow-400 mb-4">✨ Submit Your Lucky Numbers ✨</h2>
-        <input type="text" id="userName" placeholder="Your Name" class="mb-3 w-full p-3 rounded-lg bg-gray-800 text-white border border-indigo-500 focus:ring-2 focus:ring-yellow-400">
-        <input type="text" id="userPhone" inputmode="numeric" placeholder="Your Phone Number" class="mb-3 w-full p-3 rounded-lg bg-gray-800 text-white border border-indigo-500 focus:ring-2 focus:ring-yellow-400">
-
-        <div id="number-grid"></div>
-
-        <button id="submitBtn" 
-          class="mt-4 w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 
-                 rounded-xl text-white font-bold text-lg shadow-lg transform transition hover:scale-105 flex items-center justify-center gap-2">
-          🎲 Submit Selection
-        </button>
-
-        <div id="result" class="mt-4 text-lg md:text-xl font-bold text-center text-green-400"></div>
-      </div>
+  <!-- CENTER: Selection Hub -->
+  <div class="glass-card" style="padding: 1.5rem;">
+    <div class="section-title">
+      <i class="fas fa-dice-d6"></i>
+      <span>Pick Your Destiny</span>
     </div>
-
-    <!-- Winners List -->
-    <div class="card overflow-x-auto overflow-y-auto max-h-[400px] md:max-h-[600px]">
-      <h2 class="text-xl md:text-2xl font-bold text-yellow-300 mb-4">🏆 Round Winners</h2>
-      <div id="winnersRounds" class="space-y-4"></div>
+    <div style="margin-bottom: 1.2rem;">
+      <input type="text" id="userName" class="premium-input" placeholder="Full name *" autocomplete="off">
+      <input type="tel" id="userPhone" class="premium-input" style="margin-top: 12px;" placeholder="Mobile number *" inputmode="numeric">
+    </div>
+    <div id="numberGridContainer" class="number-grid"></div>
+    <button id="submitSelectionBtn" class="glow-button">
+      <i class="fas fa-gem"></i> Secure My Lucky Numbers
+    </button>
+    <div id="resultMessage" class="result-message"></div>
+    <div style="font-size: 0.7rem; text-align: center; margin-top: 12px; opacity:0.7;">
+      <i class="fas fa-shield-alt"></i> Real-time sync • Blockchain inspired
     </div>
   </div>
 
-  <!-- Footer -->
-  <div class="footer">Powered by Bohara Lucky Draw • Mobile-Friendly Dashboard</div>
+  <!-- RIGHT: Winners Hall of Fame -->
+  <div class="glass-card" style="padding: 1.2rem;">
+    <div class="section-title">
+      <i class="fas fa-medal"></i>
+      <span>🏆 Glory Rounds</span>
+    </div>
+    <div id="winnersListContainer" class="winner-timeline">
+      <div style="text-align:center; padding:2rem;">Awaiting champions...</div>
+    </div>
+  </div>
+</div>
 
-  <audio id="dingSound" src="/static/ding.mp3" preload="auto"></audio>
+<footer>
+  <i class="fas fa-gem"></i> Bohara Lucky Draw — Where Fortune Meets Elegance | © 2025 Premium Experience
+</footer>
 
-  <script>
-    const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
-    const grid = document.getElementById("number-grid");
-    let takenNumbers = [];
+<audio id="successChime" preload="auto">
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+</audio>
+<script>
+  // Use the same backend endpoint
+  const BACKEND_URL = "https://boharaluckydraw-backend.onrender.com";
+  
+  // State management
+  let currentTakenNumbers = [];        // array of taken numbers (integers)
+  let currentParticipants = [];        // full participant list
+  let selectedNumbersSet = new Set();   // store selected numbers locally before submit
 
-        async function loadParticipantsUI() {
-      const response = await fetch(`${BACKEND_URL}/participants`);
-      const data = await response.json();
+  // DOM Elements
+  const gridContainer = document.getElementById("numberGridContainer");
+  const participantsTableBody = document.getElementById("participantsTableBody");
+  const winnersContainer = document.getElementById("winnersListContainer");
+  const userNameInput = document.getElementById("userName");
+  const userPhoneInput = document.getElementById("userPhone");
+  const submitBtn = document.getElementById("submitSelectionBtn");
+  const resultDiv = document.getElementById("resultMessage");
+  const chimeAudio = document.getElementById("successChime");
 
-      takenNumbers = data.requests.flatMap(r => r.numbers.map(num => parseInt(num)));
+  // Helper: play custom beep + fallback (web audio friendly)
+  function playSuccessFeedback() {
+    try {
+      if (chimeAudio) {
+        chimeAudio.currentTime = 0;
+        chimeAudio.play().catch(e => console.log("Audio autoplay blocked"));
+      } else {
+        // alternative simple beep using web audio
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.frequency.value = 880;
+        gainNode.gain.value = 0.2;
+        oscillator.start();
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+        audioCtx.resume();
+      }
+    } catch(e) {}
+  }
 
-      const table = document.getElementById("participantsTable");
-      table.innerHTML = "";
-      data.requests.forEach(r => {
-        const row = `<tr>
-          <td class="border border-gray-700 px-4 py-2">${r.name}</td>
-          <td class="border border-gray-700 px-4 py-2">${r.phone}</td>
-          <td class="border border-gray-700 px-4 py-2">${r.numbers.join(", ")}</td>
-        </tr>`;
-        table.innerHTML += row;
-      });
-
-      renderGrid();
-      loadWinnersUI();
+  // Premium confetti system
+  function burstConfetti() {
+    const colors = ['#facc15', '#ffd966', '#22c55e', '#3b82f6', '#ec4899', '#f97316'];
+    const count = Math.min(140, window.innerWidth / 5);
+    for (let i = 0; i < count; i++) {
+      const particle = document.createElement('div');
+      particle.classList.add('confetti-particle');
+      particle.style.left = Math.random() * window.innerWidth + 'px';
+      particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      particle.style.width = (6 + Math.random() * 10) + 'px';
+      particle.style.height = (8 + Math.random() * 12) + 'px';
+      particle.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      particle.style.animationDuration = 1.5 + Math.random() * 2.5 + 's';
+      particle.style.animationDelay = Math.random() * 0.5 + 's';
+      document.body.appendChild(particle);
+      setTimeout(() => particle.remove(), 4000);
     }
+  }
 
-    function renderGrid() {
-      grid.innerHTML = "";
-      for (let i = 1; i <= 150; i++) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.innerText = i;
-        btn.className = "number-btn";
-        if (takenNumbers.includes(i)) {
-          btn.classList.add("taken");
-          btn.disabled = true;
-        } else {
-          btn.classList.add("available");
-          btn.onclick = () => btn.classList.toggle("selected");
+  // Render number grid with dynamic states (available / taken / selected)
+  function renderNumberGrid() {
+    if (!gridContainer) return;
+    gridContainer.innerHTML = '';
+    for (let num = 1; num <= 150; num++) {
+      const btn = document.createElement('button');
+      btn.textContent = num;
+      btn.classList.add('num-btn');
+      const isTaken = currentTakenNumbers.includes(num);
+      const isSelectedLocal = selectedNumbersSet.has(num);
+      
+      if (isTaken) {
+        btn.classList.add('taken');
+        btn.disabled = true;
+      } else {
+        btn.classList.add('available');
+        if (isSelectedLocal) {
+          btn.classList.add('selected');
         }
-        grid.appendChild(btn);
+        // Toggle selection for available numbers
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (currentTakenNumbers.includes(num)) return;
+          if (selectedNumbersSet.has(num)) {
+            selectedNumbersSet.delete(num);
+            btn.classList.remove('selected');
+          } else {
+            selectedNumbersSet.add(num);
+            btn.classList.add('selected');
+          }
+        });
       }
+      gridContainer.appendChild(btn);
     }
+  }
 
-    async function loadWinnersUI() {
-      const response = await fetch(`${BACKEND_URL}/winners`);
+  // Load participants & update taken numbers + UI
+  async function loadParticipantsAndGrid() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/participants`);
+      if (!response.ok) throw new Error('Failed participants fetch');
       const data = await response.json();
-      const container = document.getElementById("winnersRounds");
-      container.innerHTML = "";
-      data.rounds.forEach(round => {
-        const div = document.createElement("div");
-        div.className = "winner-card";
-
-        const title = document.createElement("h3");
-        title.className = "text-lg font-bold text-yellow-400 mb-2";
-        title.innerText = `Round ${round.round}`;
-        div.appendChild(title);
-
-        round.messages.forEach(msg => {
-          const p = document.createElement("p");
-          p.innerText = msg;
-          div.appendChild(p);
-        });
-
-        container.appendChild(div);
+      currentParticipants = data.requests || [];
+      // Extract taken numbers from all participants
+      const taken = [];
+      currentParticipants.forEach(p => {
+        if (p.numbers && Array.isArray(p.numbers)) {
+          p.numbers.forEach(n => {
+            const numInt = parseInt(n);
+            if (!isNaN(numInt)) taken.push(numInt);
+          });
+        }
       });
+      currentTakenNumbers = [...new Set(taken)];
+      
+      // Update participants table
+      if (participantsTableBody) {
+        participantsTableBody.innerHTML = '';
+        if (currentParticipants.length === 0) {
+          participantsTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No entries yet</td></tr>';
+        } else {
+          currentParticipants.forEach(p => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${escapeHtml(p.name || 'Anonymous')}</td>
+              <td>${escapeHtml(p.phone || '-')}</td>
+              <td style="font-weight:500;">${(p.numbers || []).join(', ')}</td>
+            `;
+            participantsTableBody.appendChild(row);
+          });
+        }
+      }
+      
+      // Clear any selected numbers that are now taken (if user had selected before refresh)
+      for (let takenNum of currentTakenNumbers) {
+        if (selectedNumbersSet.has(takenNum)) {
+          selectedNumbersSet.delete(takenNum);
+        }
+      }
+      renderNumberGrid();
+    } catch (err) {
+      console.error(err);
+      if (participantsTableBody) participantsTableBody.innerHTML = '<tr><td colspan="3">⚠️ Cannot load data</td></tr>';
     }
+  }
 
-    document.getElementById("submitBtn").onclick = async () => {
-      const name = document.getElementById("userName").value.trim();
-      const phone = document.getElementById("userPhone").value.trim();
-      if (!name || !phone) {
-        document.getElementById("result").innerText = "⚠️ Please enter your name and phone number.";
+  // Load winners and render with luxury style
+  async function loadWinners() {
+    try {
+      const resp = await fetch(`${BACKEND_URL}/winners`);
+      if (!resp.ok) throw new Error('Winners fetch error');
+      const data = await resp.json();
+      const roundsArray = data.rounds || [];
+      if (!winnersContainer) return;
+      winnersContainer.innerHTML = '';
+      if (roundsArray.length === 0) {
+        winnersContainer.innerHTML = '<div style="text-align:center;padding:1rem;">✨ No rounds yet, be the first ✨</div>';
         return;
       }
-
-      const selected = Array.from(grid.querySelectorAll(".selected")).map(b => parseInt(b.innerText));
-      if (selected.length === 0) {
-        document.getElementById("result").innerText = "⚠️ Please select at least one number.";
-        return;
-      }
-
-      const payload = { name, phone, numbers: selected };
-
-      try {
-        const response = await fetch(`${BACKEND_URL}/choose`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-        document.getElementById("result").innerText = data.message || data.error;
-        loadParticipantsUI();
-        playDing();
-        launchConfetti();
-      } catch (err) {
-        console.error("Submission failed:", err);
-        document.getElementById("result").innerText = "❌ Error submitting selection.";
-      }
-    };
-
-    function launchConfetti() {
-      const count = window.innerWidth < 768 ? 50 : 100; // fewer confetti on mobile
-      for (let i = 0; i < count; i++) {
-        const confetti = document.createElement("div");
-        confetti.className = "confetti";
-        confetti.style.left = Math.random() * window.innerWidth + "px";
-        confetti.style.backgroundColor = ["#facc15", "#22c55e", "#3b82f6", "#ef4444", "#ec4899"][Math.floor(Math.random()*5)];
-        confetti.style.animationDuration = (2 + Math.random() * 3) + "s";
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 5000);
-      }
+      // sort rounds by round number descending (latest first)
+      roundsArray.sort((a,b) => b.round - a.round);
+      roundsArray.forEach(round => {
+        const roundDiv = document.createElement('div');
+        roundDiv.classList.add('winner-item');
+        const roundTitle = document.createElement('div');
+        roundTitle.classList.add('winner-round');
+        roundTitle.innerHTML = `<i class="fas fa-trophy"></i> Round ${round.round}`;
+        roundDiv.appendChild(roundTitle);
+        if (round.messages && round.messages.length) {
+          round.messages.forEach(msg => {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('winner-message');
+            msgDiv.innerHTML = `<i class="fas fa-star-of-life" style="font-size:8px; margin-right:6px;"></i> ${escapeHtml(msg)}`;
+            roundDiv.appendChild(msgDiv);
+          });
+        } else {
+          const emptyMsg = document.createElement('div');
+          emptyMsg.classList.add('winner-message');
+          emptyMsg.innerText = '🏅 Winners announced';
+          roundDiv.appendChild(emptyMsg);
+        }
+        winnersContainer.appendChild(roundDiv);
+      });
+    } catch (err) {
+      console.error("Winners load error:", err);
+      if (winnersContainer) winnersContainer.innerHTML = '<div style="padding:1rem;">Unable to load winners</div>';
     }
+  }
 
-    function playDing() {
-      const sound = document.getElementById("dingSound");
-      sound.currentTime = 0;
-      sound.play();
+  // Helper: sanitize
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // Submit new selection to backend
+  async function submitSelection() {
+    const name = userNameInput.value.trim();
+    const phone = userPhoneInput.value.trim();
+    if (!name || !phone) {
+      resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please enter both name and phone number.';
+      resultDiv.style.color = "#facc15";
+      return;
     }
+    const selectedNumbers = Array.from(selectedNumbersSet);
+    if (selectedNumbers.length === 0) {
+      resultDiv.innerHTML = '<i class="fas fa-hand-peace"></i> Select at least one lucky number!';
+      resultDiv.style.color = "#ffaa66";
+      return;
+    }
+    // verify selected numbers are not already taken (double-check)
+    const conflict = selectedNumbers.some(num => currentTakenNumbers.includes(num));
+    if (conflict) {
+      resultDiv.innerHTML = '⚠️ Some numbers were already taken. Refreshing grid...';
+      await loadParticipantsAndGrid();
+      return;
+    }
+    const payload = { name, phone, numbers: selectedNumbers };
+    try {
+      const response = await fetch(`${BACKEND_URL}/choose`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        resultDiv.innerHTML = `🎉 ${data.message || 'Success! Numbers registered!'} 🎉`;
+        resultDiv.style.color = "#bbf7d0";
+        // success: clear selected numbers from local set, reset input fields optionally keep?
+        selectedNumbersSet.clear();
+        // refresh participants & winners and grid
+        await loadParticipantsAndGrid();
+        await loadWinners();
+        // visual & audio celebration
+        playSuccessFeedback();
+        burstConfetti();
+        // clear name/phone optionally keep but good UX: reset fields?
+        // userNameInput.value = '';   (optional but to avoid double submit, but maybe keep if they want multiple)
+        // phone keep? We'll leave it but give option. We'll keep for convenience but clear selection.
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        resultDiv.innerHTML = `❌ ${data.error || data.message || 'Submission failed'}`;
+        resultDiv.style.color = "#f87171";
+        // refresh data to sync any state changes
+        await loadParticipantsAndGrid();
+        await loadWinners();
+      }
+    } catch (err) {
+      console.error(err);
+      resultDiv.innerHTML = '🌐 Network error. Please try again.';
+      resultDiv.style.color = "#f87171";
+    }
+  }
 
-    // Initial load
-    loadParticipantsUI();
-  </script>
+  // Global auto-refresh every 10 seconds to keep synced (world class realtime)
+  let refreshInterval;
+  function startAutoRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(async () => {
+      // preserve selected numbers but if any selected become taken -> we remove them from selection
+      const oldTakenSet = new Set(currentTakenNumbers);
+      await loadParticipantsAndGrid();  // updates currentTakenNumbers and grid
+      await loadWinners();
+      // After refresh, remove any selected numbers that are now taken
+      for (let takenNum of currentTakenNumbers) {
+        if (selectedNumbersSet.has(takenNum)) {
+          selectedNumbersSet.delete(takenNum);
+        }
+      }
+      renderNumberGrid();  // re-render to reflect correct selected/taken states
+    }, 10000);
+  }
+
+  // Initial load with full sync
+  async function init() {
+    await loadParticipantsAndGrid();
+    await loadWinners();
+    startAutoRefresh();
+    // Attach submit event
+    submitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      submitSelection();
+    });
+    // Input validation: phone numbers only digits & length warning
+    userPhoneInput.addEventListener('input', function(e) {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 15);
+    });
+  }
+  
+  init();
+</script>
 </body>
 </html>
